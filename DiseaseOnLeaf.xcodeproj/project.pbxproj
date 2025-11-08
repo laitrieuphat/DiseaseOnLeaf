@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0D7CB9966436EF27A735368D /* Pods_DiseaseOnLeafTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C42F1DE851F2EC7614D5FB04 /* Pods_DiseaseOnLeafTests.framework */; };
+		19E954EB95B96BF6AA2A3FD0 /* Pods_DiseaseOnLeaf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C485F51C88EA63E30F27299 /* Pods_DiseaseOnLeaf.framework */; };
+		EBA89EA44C871B49F7B6F6DC /* Pods_DiseaseOnLeaf_DiseaseOnLeafUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8A8250B8B2532346F5FA669 /* Pods_DiseaseOnLeaf_DiseaseOnLeafUITests.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		76D1E84D2EBED89700039700 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +30,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1512824358460B76B1F063E6 /* Pods-DiseaseOnLeaf.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DiseaseOnLeaf.release.xcconfig"; path = "Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf.release.xcconfig"; sourceTree = "<group>"; };
+		2125218692F8234D987EA118 /* Pods-DiseaseOnLeaf.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DiseaseOnLeaf.debug.xcconfig"; path = "Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf.debug.xcconfig"; sourceTree = "<group>"; };
+		63D6081F203E66BCE8405630 /* Pods-DiseaseOnLeafTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DiseaseOnLeafTests.release.xcconfig"; path = "Target Support Files/Pods-DiseaseOnLeafTests/Pods-DiseaseOnLeafTests.release.xcconfig"; sourceTree = "<group>"; };
 		76D1E8362EBED89500039700 /* DiseaseOnLeaf.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiseaseOnLeaf.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76D1E84C2EBED89700039700 /* DiseaseOnLeafTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DiseaseOnLeafTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		76D1E8562EBED89700039700 /* DiseaseOnLeafUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DiseaseOnLeafUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7C485F51C88EA63E30F27299 /* Pods_DiseaseOnLeaf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DiseaseOnLeaf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F08AFA838D6459537A89700 /* Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.release.xcconfig"; path = "Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.release.xcconfig"; sourceTree = "<group>"; };
+		86AEB5B6261E9C2C162D0A91 /* Pods-DiseaseOnLeafTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DiseaseOnLeafTests.debug.xcconfig"; path = "Target Support Files/Pods-DiseaseOnLeafTests/Pods-DiseaseOnLeafTests.debug.xcconfig"; sourceTree = "<group>"; };
+		C42F1DE851F2EC7614D5FB04 /* Pods_DiseaseOnLeafTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DiseaseOnLeafTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8A8250B8B2532346F5FA669 /* Pods_DiseaseOnLeaf_DiseaseOnLeafUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DiseaseOnLeaf_DiseaseOnLeafUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E880FBC6E8F5A7D6721775A4 /* Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.debug.xcconfig"; path = "Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -65,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19E954EB95B96BF6AA2A3FD0 /* Pods_DiseaseOnLeaf.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D7CB9966436EF27A735368D /* Pods_DiseaseOnLeafTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBA89EA44C871B49F7B6F6DC /* Pods_DiseaseOnLeaf_DiseaseOnLeafUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +110,8 @@
 				76D1E84F2EBED89700039700 /* DiseaseOnLeafTests */,
 				76D1E8592EBED89700039700 /* DiseaseOnLeafUITests */,
 				76D1E8372EBED89500039700 /* Products */,
+				AA1B8B6613DB483BBC0EDBB2 /* Pods */,
+				EF5DF0E233E747A67139C0E0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -105,6 +125,29 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		AA1B8B6613DB483BBC0EDBB2 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				2125218692F8234D987EA118 /* Pods-DiseaseOnLeaf.debug.xcconfig */,
+				1512824358460B76B1F063E6 /* Pods-DiseaseOnLeaf.release.xcconfig */,
+				E880FBC6E8F5A7D6721775A4 /* Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.debug.xcconfig */,
+				7F08AFA838D6459537A89700 /* Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.release.xcconfig */,
+				86AEB5B6261E9C2C162D0A91 /* Pods-DiseaseOnLeafTests.debug.xcconfig */,
+				63D6081F203E66BCE8405630 /* Pods-DiseaseOnLeafTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		EF5DF0E233E747A67139C0E0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7C485F51C88EA63E30F27299 /* Pods_DiseaseOnLeaf.framework */,
+				C8A8250B8B2532346F5FA669 /* Pods_DiseaseOnLeaf_DiseaseOnLeafUITests.framework */,
+				C42F1DE851F2EC7614D5FB04 /* Pods_DiseaseOnLeafTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -112,9 +155,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 76D1E85F2EBED89700039700 /* Build configuration list for PBXNativeTarget "DiseaseOnLeaf" */;
 			buildPhases = (
+				918915075C4A9FA2C1911FBE /* [CP] Check Pods Manifest.lock */,
 				76D1E8322EBED89500039700 /* Sources */,
 				76D1E8332EBED89500039700 /* Frameworks */,
 				76D1E8342EBED89500039700 /* Resources */,
+				605AD72ABC2BE320A88CE721 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -124,8 +169,6 @@
 				76D1E8382EBED89500039700 /* DiseaseOnLeaf */,
 			);
 			name = DiseaseOnLeaf;
-			packageProductDependencies = (
-			);
 			productName = DiseaseOnLeaf;
 			productReference = 76D1E8362EBED89500039700 /* DiseaseOnLeaf.app */;
 			productType = "com.apple.product-type.application";
@@ -134,6 +177,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 76D1E8642EBED89700039700 /* Build configuration list for PBXNativeTarget "DiseaseOnLeafTests" */;
 			buildPhases = (
+				6025670E6F6582C1FE098122 /* [CP] Check Pods Manifest.lock */,
 				76D1E8482EBED89700039700 /* Sources */,
 				76D1E8492EBED89700039700 /* Frameworks */,
 				76D1E84A2EBED89700039700 /* Resources */,
@@ -147,8 +191,6 @@
 				76D1E84F2EBED89700039700 /* DiseaseOnLeafTests */,
 			);
 			name = DiseaseOnLeafTests;
-			packageProductDependencies = (
-			);
 			productName = DiseaseOnLeafTests;
 			productReference = 76D1E84C2EBED89700039700 /* DiseaseOnLeafTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -157,9 +199,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 76D1E8672EBED89700039700 /* Build configuration list for PBXNativeTarget "DiseaseOnLeafUITests" */;
 			buildPhases = (
+				D752E8334C20537F9DCD9C67 /* [CP] Check Pods Manifest.lock */,
 				76D1E8522EBED89700039700 /* Sources */,
 				76D1E8532EBED89700039700 /* Frameworks */,
 				76D1E8542EBED89700039700 /* Resources */,
+				3E95AA7C8F8F9864C0C5D1B2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -170,8 +214,6 @@
 				76D1E8592EBED89700039700 /* DiseaseOnLeafUITests */,
 			);
 			name = DiseaseOnLeafUITests;
-			packageProductDependencies = (
-			);
 			productName = DiseaseOnLeafUITests;
 			productReference = 76D1E8562EBED89700039700 /* DiseaseOnLeafUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -244,6 +286,109 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		3E95AA7C8F8F9864C0C5D1B2 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		6025670E6F6582C1FE098122 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DiseaseOnLeafTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		605AD72ABC2BE320A88CE721 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		918915075C4A9FA2C1911FBE /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DiseaseOnLeaf-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D752E8334C20537F9DCD9C67 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		76D1E8322EBED89500039700 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -284,12 +429,14 @@
 /* Begin XCBuildConfiguration section */
 		76D1E8602EBED89700039700 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2125218692F8234D987EA118 /* Pods-DiseaseOnLeaf.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XDH7KVZD9U;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiseaseOnLeaf/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -297,6 +444,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -312,12 +460,14 @@
 		};
 		76D1E8612EBED89700039700 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1512824358460B76B1F063E6 /* Pods-DiseaseOnLeaf.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XDH7KVZD9U;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiseaseOnLeaf/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -325,6 +475,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -459,6 +610,7 @@
 		};
 		76D1E8652EBED89700039700 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 86AEB5B6261E9C2C162D0A91 /* Pods-DiseaseOnLeafTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -478,6 +630,7 @@
 		};
 		76D1E8662EBED89700039700 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 63D6081F203E66BCE8405630 /* Pods-DiseaseOnLeafTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -497,6 +650,7 @@
 		};
 		76D1E8682EBED89700039700 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E880FBC6E8F5A7D6721775A4 /* Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -514,6 +668,7 @@
 		};
 		76D1E8692EBED89700039700 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7F08AFA838D6459537A89700 /* Pods-DiseaseOnLeaf-DiseaseOnLeafUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

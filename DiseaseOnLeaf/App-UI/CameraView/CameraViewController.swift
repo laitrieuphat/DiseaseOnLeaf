@@ -10,12 +10,25 @@ import AVFoundation
 
 
 
+/**
+ Leaf_Algal
+ Leaf_Blight
+ Leaf_colletotrichum
+ Leaf_Healthy
+ Leaf_Phomopsis
+ Leaf_Rhizoctonia
+ 
+ chay_la
+ dom_la
+ gi_sat
+ la_khoe
+thoi_qua_den
+ qua_khoe
+ 
+ */
+
+
 class CameraViewController: UIViewController {
-    
-    // MARK: - Model info
-    var modelFileName = "efficientnetb0_durian"
-    var modelFileType = "tflite"
-    
     
     // MARK: - UI
     private var previewView = UIView()
@@ -64,7 +77,8 @@ class CameraViewController: UIViewController {
     }
     
     private func setupModelAI() {
-        self.interpreterManager = TFLiteInterpreterManager(modelFileName: modelFileName, modelFileType: modelFileType)
+        self.interpreterManager = TFLiteInterpreterManager(modelFileName: "efficientnet_b0_aug",
+                                                           modelFileType: "tflite")
         self.interpreterManager.loadModel()
         self.interpreterManager.loadLabels()
         self.interpreterManager.previewView = previewView
@@ -87,8 +101,6 @@ class CameraViewController: UIViewController {
             previewView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             previewView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             previewView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-         
             
             // **[NEW]** Prediction Label Constraints (Top Right)
             predictionLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
@@ -155,13 +167,10 @@ class CameraViewController: UIViewController {
         }
     }
     
-    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         previewLayer.frame = previewView.bounds
     }
-    
-    
 }
 
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
@@ -172,7 +181,6 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         // Run model on each frame
         self.interpreterManager.runModel(on: pixelBuffer)
-            
     }
 }
 

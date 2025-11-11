@@ -1,9 +1,9 @@
-Leaf_Algal
-Leaf_Blight
-Leaf_colletotrichum
-Leaf_Healthy
-Leaf_Phomopsis
-Leaf_Rhizoctonia
+chay_la
+dom_la
+gi_sat
+la_khoe
+thoi_qua_den
+qua_khoe
 
 
 

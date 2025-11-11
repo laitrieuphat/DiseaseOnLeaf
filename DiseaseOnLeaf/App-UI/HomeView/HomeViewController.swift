@@ -8,8 +8,7 @@
 import UIKit
 import AVFoundation
 import TensorFlowLite
-
-
+import CoreVideo
 
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
@@ -17,9 +16,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     private var interpreterManager: TFLiteInterpreterManager!
     
     // MARK: - Model info
-    var modelFileName = "efficientnetb0_durian"
-    var modelFileType = "tflite"
-    
     let picker = UIImagePickerController()
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
@@ -118,11 +114,14 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
    }
     
     private func setupModelAI() {
-        self.interpreterManager = TFLiteInterpreterManager(modelFileName: modelFileName, modelFileType: modelFileType)
+        self.interpreterManager = TFLiteInterpreterManager(modelFileName: "efficientnet_b0_aug",
+                                                           modelFileType: "tflite")
         self.interpreterManager.loadModel()
         self.interpreterManager.loadLabels()
-        
-    }
+        // Provide UI references so the interpreter manager can update UI elements and draw bounding boxes
+        self.interpreterManager.predictionLabel = self.predictionLabel
+        self.interpreterManager.previewView = self.previewView
+     }
     
        
     func setupUI(){
@@ -183,10 +182,68 @@ extension HomeViewController : UIImagePickerControllerDelegate{
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.originalImage] as? UIImage {
             capturedImage = image
+
             
-            
+            // Convert UIImage to CVPixelBuffer and run model on a background thread
+            if let pixelBuffer = pixelBuffer(from: image) {
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    guard let self = self else { return }
+                    self.interpreterManager.runModel(on: pixelBuffer)
+                }
+            } else {
+                print("Failed to convert UIImage to CVPixelBuffer")
+            }
+         }
+         picker.dismiss(animated: true, completion: nil)
+         
+     }
+ }
+
+// MARK: - Image conversion helper
+extension HomeViewController {
+    /// Convert UIImage -> CVPixelBuffer (BGRA) to feed into the interpreter's existing preprocess(pixelBuffer:)
+    private func pixelBuffer(from image: UIImage) -> CVPixelBuffer? {
+        guard let cgImage = image.cgImage else { return nil }
+        let width = cgImage.width
+        let height = cgImage.height
+
+        let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
+                     kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue] as CFDictionary
+        var pixelBufferPointer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                         width,
+                                         height,
+                                         kCVPixelFormatType_32BGRA,
+                                         attrs,
+                                         &pixelBufferPointer)
+        guard status == kCVReturnSuccess, let pixelBuffer = pixelBufferPointer else {
+            return nil
         }
-        picker.dismiss(animated: true, completion: nil)
-        
+
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0)) }
+
+        guard let pxData = CVPixelBufferGetBaseAddress(pixelBuffer) else { return nil }
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        // Combine alpha info and byte order for the bitmap context
+        let bitmapInfo = CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+
+        guard let context = CGContext(data: pxData,
+                                      width: width,
+                                      height: height,
+                                      bitsPerComponent: 8,
+                                      bytesPerRow: bytesPerRow,
+                                      space: colorSpace,
+                                      bitmapInfo: bitmapInfo) else {
+            return nil
+        }
+
+        context.clear(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
+        // Draw the image into the context (flips automatically as needed)
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
+
+        return pixelBuffer
     }
 }

@@ -4,7 +4,6 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -17,26 +16,9 @@
         <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
             <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-            <subviews>
-                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg" translatesAutoresizingMaskIntoConstraints="NO" id="Tlg-Ex-HOR">
-                    <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                </imageView>
-            </subviews>
             <viewLayoutGuide key="safeArea" id="fnl-2z-Ty3"/>
-            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-            <constraints>
-                <constraint firstItem="Tlg-Ex-HOR" firstAttribute="trailing" secondItem="fnl-2z-Ty3" secondAttribute="trailing" id="EAr-cp-TxK"/>
-                <constraint firstAttribute="bottom" secondItem="Tlg-Ex-HOR" secondAttribute="bottom" id="IWc-gs-id6"/>
-                <constraint firstItem="Tlg-Ex-HOR" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="OiR-T0-PZK"/>
-                <constraint firstItem="Tlg-Ex-HOR" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="cnX-Ox-M1H"/>
-            </constraints>
+            <color key="backgroundColor" red="0.78074487475271193" green="1" blue="0.67341004890222544" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
             <point key="canvasLocation" x="136.64122137404578" y="19.718309859154932"/>
         </view>
     </objects>
-    <resources>
-        <image name="bg" width="720" height="1280"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
-    </resources>
 </document>

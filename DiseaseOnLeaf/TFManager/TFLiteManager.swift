@@ -123,60 +123,62 @@ class TFLiteInterpreterManager {
         guard let inputData = preprocess(pixelBuffer: pixelBuffer) else { return }
         
         do {
-            // 4. Copy input
-            try interpreter?.copy(inputData, toInputAt: 0)
-            
-            //   // 5. Run model
-            try interpreter?.invoke()
             
             let inferenceEndTime = CFAbsoluteTimeGetCurrent()
             let inferenceTime = inferenceEndTime - inferenceStartTime
             let fps = 1.0 / inferenceTime
             
-            // Output is handled in the background thread below
+            switch runInference(inputData: inputData) {
+            case .success(let outputData):
+                // Inference succeeded
             
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                guard let self = self, let interpreter = self.interpreter else { return }
-                
-                do {
-                    let outputTensor = try interpreter.output(at: 0)
+                // Output is handled in the background thread below
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    guard let self = self, let interpreter = self.interpreter else { return }
                     
-                    // 6. Interpret output as float array
-                    let results = [Float](unsafeData: outputTensor.data) ?? []
-                    
-                    
-                    let topResult = results.topK(k: 1).first
-                    
-                    print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps), Result: \(String(describing: topResult))")
-                    
-                    // Prepare output text
-                    var outputText = ""
-                    if let result = topResult {
-                        let label: String
-                        if result.index < self.labels.count {
-                            label = self.labels[result.index]
+                    do {
+                        // 6. Interpret output as float array
+                        let results = [Float](unsafeData: outputData) ?? []
+                        let topResult = results.topK(k: 1).first
+                        
+                        print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps), Result: \(String(describing: topResult))")
+                        
+                        // Prepare output text
+                        var outputText = ""
+                        if let result = topResult {
+                            let label: String
+                            if result.index < self.labels.count {
+                                label = self.labels[result.index]
+                            } else {
+                                label = "Index \(result.index)"
+                            }
+                            
+                            
+                            let confidenceText = String(format: "%.1f", result.score * 100.0)
+                            outputText = "\(label) (\(confidenceText)%)"
                         } else {
-                            label = "Index \(result.index)"
+                            outputText = "No result"
                         }
                         
-                        
-                        let confidenceText = String(format: "%.1f", result.score * 100.0)
-                        outputText = "\(label) (\(confidenceText)%)"
-                    } else {
-                        outputText = "No result"
+                        // 7. Update UI on the main thread
+                        DispatchQueue.main.async {
+                            self.predictionLabel?.text = outputText
+                            
+                            // **[NEW]** Update FPS Label
+                            self.fpsLabel?.text = String(format: "FPS: %.1f", fps)
+                        }
+                    } catch {
+                        print("Lỗi khi xử lý output: \(error)")
                     }
-                    
-                    // 7. Update UI on the main thread
-                    DispatchQueue.main.async {
-                        self.predictionLabel?.text = outputText
-                        
-                        // **[NEW]** Update FPS Label
-                        self.fpsLabel?.text = String(format: "FPS: %.1f", fps)
-                    }
-                } catch {
-                    print("Lỗi khi xử lý output: \(error)")
                 }
+                
+            case .failure(let error):
+                print("Lỗi khi chạy inference: \(error)")
+            default:
+                break
             }
+            
+    
         } catch {
             print("Lỗi khi chạy model: \(error)")
         }

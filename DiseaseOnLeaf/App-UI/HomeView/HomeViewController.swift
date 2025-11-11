@@ -95,20 +95,32 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "DiseaseOnLeaf"
+        title = "Hệ Thống Nhận Diện Bệnh Trên Cây"
         setupUI()
         picker.sourceType = .camera
         picker.delegate = self
         setupModelAI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+           super.viewWillAppear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = false
+
+           let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = .mint
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+           appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+
+        navigationController?.navigationBar.tintColor = .black
+           navigationController?.navigationBar.standardAppearance = appearance
+           navigationController?.navigationBar.compactAppearance = appearance
+           navigationController?.navigationBar.scrollEdgeAppearance = appearance
+   }
     
     private func setupModelAI() {
         self.interpreterManager = TFLiteInterpreterManager(modelFileName: modelFileName, modelFileType: modelFileType)
         self.interpreterManager.loadModel()
         self.interpreterManager.loadLabels()
-//        self.interpreterManager.previewView = previewView
-    
         
     }
     
@@ -136,7 +148,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         detectImgByCamBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
         detectImgByCamBtn.heightAnchor.constraint(equalToConstant: 60).isActive = true
         //
-        
         collectImageBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
         collectImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
         collectImageBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true

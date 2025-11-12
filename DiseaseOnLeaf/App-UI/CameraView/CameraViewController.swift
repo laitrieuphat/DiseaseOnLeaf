@@ -22,11 +22,10 @@ import AVFoundation
  dom_la
  gi_sat
  la_khoe
-thoi_qua_den
+ thoi_qua_den
  qua_khoe
  
  */
-
 
 class CameraViewController: UIViewController {
     
@@ -82,9 +81,6 @@ class CameraViewController: UIViewController {
         self.interpreterManager.loadModel()
         self.interpreterManager.loadLabels()
         self.interpreterManager.previewView = previewView
-        self.interpreterManager.predictionLabel = predictionLabel
-        self.interpreterManager.fpsLabel = fpsLabel // **[NEW]** Link FPS
-        
     }
     
     private func setupUI() {
@@ -180,7 +176,36 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
                        from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         // Run model on each frame
-        self.interpreterManager.runModel(on: pixelBuffer)
+        self.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, fps  in
+         let topResult = results.topK(k: 1).first // Get the top result
+            
+            print("Result: \(String(describing: topResult))")
+            
+            // Prepare output text
+            var outputText = ""
+            if let result = topResult {
+                let label: String
+                if result.index < self.interpreterManager.labels.count {
+                    label = self.interpreterManager.labels[result.index]
+                } else {
+                    label = "Index \(result.index)"
+                }
+                
+                let confidenceText = String(format: "%.1f", result.score * 100.0)
+                outputText = "\(label) (\(confidenceText)%)"
+            } else {
+                outputText = "No result"
+            }
+            
+            // 7. Update UI on the main thread
+            DispatchQueue.main.async {
+                self.predictionLabel.text = outputText
+                
+                // **[NEW]** Update FPS Label
+                self.fpsLabel.text = String(format: "FPS: %.1f", fps)
+            }
+            
+        }
     }
 }
 

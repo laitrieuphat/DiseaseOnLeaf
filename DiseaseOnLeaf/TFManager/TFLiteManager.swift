@@ -6,17 +6,15 @@
 //
 
 import TensorFlowLite
-import UIKit
 import AVFoundation
 
 class TFLiteInterpreterManager {
     // MARK: - Drawing layers
     private var boundingBoxLayers = [CAShapeLayer]()
     private let labelLayer = CATextLayer()
-
+    
     // UI references (set these from the owning ViewController)
-    var predictionLabel: UILabel?
-    var fpsLabel: UILabel?
+    
     var previewView: UIView?
     
     
@@ -45,7 +43,7 @@ class TFLiteInterpreterManager {
     }
     
     
-     func loadLabels() {
+    func loadLabels() {
         guard let labelsPath = Bundle.main.path(forResource: "labels", ofType: "txt"),
               let content = try? String(contentsOfFile: labelsPath) else {
             print("Labels not found. Predictions will show indices.")
@@ -66,18 +64,18 @@ class TFLiteInterpreterManager {
         do {
             // Specify options for the interpreter (e.g., number of threads, delegates)
             var options = Interpreter.Options()
-            options.threadCount = 1
+            options.threadCount = 5
             
             // Create the interpreter
             self.interpreter = try Interpreter(modelPath: modelPath, options: options)
             
             // Allocate memory for the model's input tensors
             try interpreter?.allocateTensors()
-        
+            
             
         } catch let error {
             print("Failed to load the model: \(error.localizedDescription)")
-       
+            
         }
     }
     
@@ -110,7 +108,8 @@ class TFLiteInterpreterManager {
     }
     
     
-    func runModel(on pixelBuffer: CVPixelBuffer) {
+    func runModel(pixelBuffer: CVPixelBuffer,
+                  completionHandler: @escaping (([Float],_ fps:Float) -> Void)) {
         // Throttle FPS to reduce CPU
         let now = Date()
         guard now.timeIntervalSince(lastRun) >= minFrameInterval else { return }
@@ -130,60 +129,23 @@ class TFLiteInterpreterManager {
             
             switch runInference(inputData: inputData) {
             case .success(let outputData):
-                // Inference succeeded
-            
+                
                 // Output is handled in the background thread below
-                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                    guard let self = self, let interpreter = self.interpreter else { return }
+                DispatchQueue.global(qos: .background).async { [weak self] in
+                    guard let strongSelf = self else { return }
+                    print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
                     
-                    do {
-                        // 6. Interpret output as float array
-                        let results = [Float](unsafeData: outputData) ?? []
-                        let topResult = results.topK(k: 1).first
-                        
-                        print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps), Result: \(String(describing: topResult))")
-                        
-                        // Prepare output text
-                        var outputText = ""
-                        if let result = topResult {
-                            let label: String
-                            if result.index < self.labels.count {
-                                label = self.labels[result.index]
-                            } else {
-                                label = "Index \(result.index)"
-                            }
-                            
-                            
-                            let confidenceText = String(format: "%.1f", result.score * 100.0)
-                            outputText = "\(label) (\(confidenceText)%)"
-                        } else {
-                            outputText = "No result"
-                        }
-                        
-                        // 7. Update UI on the main thread
-                        DispatchQueue.main.async {
-                            self.predictionLabel?.text = outputText
-                            
-                            // **[NEW]** Update FPS Label
-                            self.fpsLabel?.text = String(format: "FPS: %.1f", fps)
-                        }
-                    } catch {
-                        print("Lỗi khi xử lý output: \(error)")
-                    }
+                    // 6. Interpret output as float array
+                    let results = [Float](unsafeData: outputData) ?? []
+                    completionHandler(results, Float(fps))
                 }
                 
             case .failure(let error):
                 print("Lỗi khi chạy inference: \(error)")
-            default:
-                break
+                
             }
-            
-    
-        } catch {
-            print("Lỗi khi chạy model: \(error)")
         }
     }
-    
     
     // MARK: - Preprocess image (No normalization, only crop + resize)
     private func preprocess(pixelBuffer: CVPixelBuffer) -> Data? {
@@ -255,14 +217,12 @@ class TFLiteInterpreterManager {
         
         // 6. Draw bounding box on the screen (Main thread required for UI)
         DispatchQueue.main.async {
-            self.drawBoundingBox(cropRect: cropRect,
-                                 originalSize: CGSize(width: originalWidth, height: originalHeight))
+            self.drawBoundingBox(cropRect: cropRect,originalSize: CGSize(width: originalWidth, height: originalHeight))
         }
         
         print("preprocess(): returning raw RGB data, count=\(rgbArray.count)")
         return Data(buffer: UnsafeBufferPointer(start: rgbArray, count: rgbArray.count))
     }
-    
     
     // MARK: - Bounding Box Drawing
     private func drawBoundingBox(cropRect: CGRect, originalSize: CGSize) {

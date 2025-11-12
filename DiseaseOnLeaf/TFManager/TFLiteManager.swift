@@ -109,7 +109,7 @@ class TFLiteInterpreterManager {
     
     
     func runModel(pixelBuffer: CVPixelBuffer,
-                  completionHandler: @escaping (([Float],_ fps:Float) -> Void)) {
+                  completionHandler: @escaping (([Float],_ inferenceTime:Float, _ fps:Double) -> Void)) {
         // Throttle FPS to reduce CPU
         let now = Date()
         guard now.timeIntervalSince(lastRun) >= minFrameInterval else { return }
@@ -127,19 +127,17 @@ class TFLiteInterpreterManager {
             let inferenceTime = inferenceEndTime - inferenceStartTime
             let fps = 1.0 / inferenceTime
             
+            
             switch runInference(inputData: inputData) {
             case .success(let outputData):
-                
                 // Output is handled in the background thread below
                 DispatchQueue.global(qos: .background).async { [weak self] in
-                    guard let strongSelf = self else { return }
-                    print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
+                    guard let _ = self else { return }
                     
                     // 6. Interpret output as float array
                     let results = [Float](unsafeData: outputData) ?? []
-                    completionHandler(results, Float(fps))
+                    completionHandler(results, Float(inferenceTime * 1000), fps)
                 }
-                
             case .failure(let error):
                 print("Lỗi khi chạy inference: \(error)")
                 

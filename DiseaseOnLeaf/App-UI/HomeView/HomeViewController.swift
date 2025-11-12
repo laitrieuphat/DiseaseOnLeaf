@@ -9,6 +9,8 @@ import UIKit
 import AVFoundation
 import TensorFlowLite
 import CoreVideo
+import PhotosUI
+
 
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
@@ -16,7 +18,9 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     private var interpreterManager: TFLiteInterpreterManager!
     
     // MARK: - Model info
-    let picker = UIImagePickerController()
+    var pickerCaptureImg:UIImagePickerController?
+    var pickerChooseGallary:PHPickerViewController?
+    
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
     var previewLayer: AVCaptureVideoPreviewLayer!
@@ -69,7 +73,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }()
     
     
-  
+    
     var previewView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -78,7 +82,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         imageView.layer.cornerRadius = 15
         return imageView
     }()
-
+    
     var capturedImageLabel: UILabel = {
         let label = UILabel()
         label.text = "Captured Image"
@@ -93,25 +97,35 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         super.viewDidLoad()
         title = "Hệ Thống Nhận Diện Bệnh Trên Cây"
         setupUI()
-        picker.sourceType = .camera
-        picker.delegate = self
         setupModelAI()
+        
+        // Initialize UIImagePickerController for capturing images
+        pickerCaptureImg = UIImagePickerController()
+        pickerCaptureImg?.sourceType = .camera
+        pickerCaptureImg?.delegate = self
+        
+        // Initialize PHPickerViewController for selecting images from the gallery
+        var configuration = PHPickerConfiguration(photoLibrary: .shared())
+        configuration.filter = .images // Filter to show only images
+        configuration.selectionLimit = 1 // Allow only one image selection
+        pickerChooseGallary = PHPickerViewController(configuration: configuration)
+        pickerChooseGallary?.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
-           super.viewWillAppear(animated)
+        super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = false
-
-           let appearance = UINavigationBarAppearance()
+        
+        let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .mint
         appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
-           appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        
         navigationController?.navigationBar.tintColor = .black
-           navigationController?.navigationBar.standardAppearance = appearance
-           navigationController?.navigationBar.compactAppearance = appearance
-           navigationController?.navigationBar.scrollEdgeAppearance = appearance
-   }
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
     
     private func setupModelAI() {
         self.interpreterManager = TFLiteInterpreterManager(modelFileName: "efficientnet_b0_aug",
@@ -119,9 +133,9 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         self.interpreterManager.loadModel()
         self.interpreterManager.loadLabels()
         self.interpreterManager.previewView = self.previewView
-     }
+    }
     
-       
+    
     func setupUI(){
         view.addSubview(captureImageBtn)
         view.addSubview(collectImageBtn)
@@ -149,12 +163,13 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         collectImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
         collectImageBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true
         collectImageBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
-    
+        
         captureImageBtn.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
         captureImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
         captureImageBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true
         captureImageBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
+        collectImageBtn.addTarget(self, action: #selector(openGalleryTapped), for: .touchUpInside)
         captureImageBtn.addTarget(self, action: #selector(openCamTapped), for: .touchUpInside)
         detectImgByCamBtn.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
         
@@ -162,12 +177,19 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     @objc func cameraButtonTapped() {
         let cameraVC = CameraViewController()
+        cameraVC.interpreterManager = self.interpreterManager
         self.navigationController?.pushViewController(cameraVC, animated: true)
     }
     
     @objc func openCamTapped() {
-        present(picker, animated: true, completion: nil)
+        guard let pickerCaptureImg = pickerCaptureImg else {return}
+        present(pickerCaptureImg, animated: true, completion: nil)
         
+    }
+    
+    @objc func openGalleryTapped() {
+        guard let pickerChooseGallary = pickerChooseGallary else {return}
+        present(pickerChooseGallary , animated: true)
     }
 }
 
@@ -177,35 +199,72 @@ extension HomeViewController : UIImagePickerControllerDelegate{
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let image = info[.originalImage] as? UIImage {
-            capturedImage = image
+        
+        picker.dismiss(animated: true, completion: nil)
+        guard let image = info[.originalImage] as? UIImage else { return }
+        
+        // Hiển thị ảnh chụp lên UI ngay (nếu có)
+        DispatchQueue.main.async {
+            self.capturedImage = image
+        }
+        
+        // Chuyển sang pixel buffer và gọi model trên background queue
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            guard let pixelBuffer = image.convertToBuffer() else {
+                print("Failed to convert UIImage to CVPixelBuffer")
+                return}
             
-            
-            // Convert UIImage to CVPixelBuffer and run model on a background thread
-            if let pixelBuffer = capturedImage?.toCVPixelBuffer() {
+            self.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
+                DispatchQueue.main.async {
+                    self.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
+                }
+            }
+        }
+    }
+}
+
+extension HomeViewController: PHPickerViewControllerDelegate{
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        guard let itemProvider = results.first?.itemProvider else { return }
+        
+        if itemProvider.canLoadObject(ofClass: UIImage.self) {
+            itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
                 DispatchQueue.global(qos: .background).async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    
-                    self.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime in
-                        // Process results on the main thread
-                        DispatchQueue.main.async {
-                            let topResults = results.topK(k: 1)
-                            var predictionText = "Predictions:\n"
-                            for (index, score) in topResults {
-                                let label = self.interpreterManager.labels[index]
-                                predictionText += "\(label): \(String(format: "%.2f", score * 100))%\n"
-                            }
-                            predictionText += String(format: "Inference time: %.2f ms", inferenceTime)
-                            self.predictionLabel.text = predictionText
+                    guard let strongSelf = self else { return }
+                    if let image = image as? UIImage,
+                       let pixelBuffer = image.convertToBuffer() {
+                        strongSelf.capturedImage = image
+                        strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime, fps  in
+                            strongSelf.handleDataFromModel(results: results,
+                                                           inferenceTime: Float(inferenceTime),
+                                                           fps: Double(fps))
                         }
-                        
+                    } else if let error = error {
+                        print("Error loading image: \(error.localizedDescription)")
                     }
                 }
             }
-            picker.dismiss(animated: true, completion: nil)
-            
         }
     }
     
+    private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
+        // Process results on the main thread
+        DispatchQueue.main.async {
+            let topResults = results.topK(k: 1)
+            
+            print("Result: \(topResults)")
+            print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
+            
+            var predictionText = "Predictions:\n"
+            for (index, score) in topResults {
+                let label = self.interpreterManager.labels[index]
+                predictionText += "\(label): \(String(format: "%.2f", score * 100))%\n"
+            }
+            predictionText += String(format: "Inference time: %.2f ms", inferenceTime)
+            self.predictionLabel.text = predictionText
+        }
+    }
 }

@@ -24,7 +24,6 @@ import AVFoundation
  la_khoe
  thoi_qua_den
  qua_khoe
- 
  */
 
 class CameraViewController: UIViewController {
@@ -64,7 +63,7 @@ class CameraViewController: UIViewController {
     private var previewLayer: AVCaptureVideoPreviewLayer!
     
     // MARK: - TFLite
-    private var interpreterManager: TFLiteInterpreterManager!
+     var interpreterManager: TFLiteInterpreterManager!
     
     
     override func viewDidLoad() {
@@ -76,10 +75,6 @@ class CameraViewController: UIViewController {
     }
     
     private func setupModelAI() {
-        self.interpreterManager = TFLiteInterpreterManager(modelFileName: "efficientnet_b0_aug",
-                                                           modelFileType: "tflite")
-        self.interpreterManager.loadModel()
-        self.interpreterManager.loadLabels()
         self.interpreterManager.previewView = previewView
     }
     
@@ -176,11 +171,12 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
                        from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         // Run model on each frame
-        self.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, fps  in
+        self.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime, fps   in
          let topResult = results.topK(k: 1).first // Get the top result
             
             print("Result: \(String(describing: topResult))")
-            
+            print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
+
             // Prepare output text
             var outputText = ""
             if let result = topResult {

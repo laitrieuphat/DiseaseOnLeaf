@@ -162,6 +162,11 @@ class CameraViewController: UIViewController {
         super.viewDidLayoutSubviews()
         previewLayer.frame = previewView.bounds
     }
+    
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        self.captureSession.stopRunning()
+    }
 }
 
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate

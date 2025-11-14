@@ -29,7 +29,7 @@ import AVFoundation
 class CameraViewController: UIViewController {
     
     // MARK: - UI
-    private var previewView = UIView()
+    private var previewView = UIImageView()
     private let predictionLabel: UILabel = {
         let l = UILabel()
         l.translatesAutoresizingMaskIntoConstraints = false

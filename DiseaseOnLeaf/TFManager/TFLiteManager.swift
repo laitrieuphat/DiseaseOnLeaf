@@ -15,8 +15,7 @@ class TFLiteInterpreterManager {
     
     // UI references (set these from the owning ViewController)
     
-    var previewView: UIView?
-    
+    var previewView: UIImageView?
     
     private var interpreter: Interpreter?
     private let modelFileName: String

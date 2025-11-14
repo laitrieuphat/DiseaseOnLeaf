@@ -80,6 +80,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         imageView.backgroundColor = .systemGray
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 15
+        imageView.image = nil
         return imageView
     }()
     
@@ -203,21 +204,20 @@ extension HomeViewController : UIImagePickerControllerDelegate{
         picker.dismiss(animated: true, completion: nil)
         guard let image = info[.originalImage] as? UIImage else { return }
         
-        // Hiển thị ảnh chụp lên UI ngay (nếu có)
-        DispatchQueue.main.async {
-            self.capturedImage = image
-        }
-        
         // Chuyển sang pixel buffer và gọi model trên background queue
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
             guard let pixelBuffer = image.convertToBuffer() else {
                 print("Failed to convert UIImage to CVPixelBuffer")
                 return}
-            
-            self.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
-                DispatchQueue.main.async {
-                    self.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
+            DispatchQueue.global(qos: .background).async { [weak self] in
+                guard let strongSelf = self else { return }
+
+                strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
+                    DispatchQueue.main.async {
+                        strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
+                        strongSelf.capturedImage = image
+                    }
                 }
             }
         }
@@ -226,21 +226,24 @@ extension HomeViewController : UIImagePickerControllerDelegate{
 
 extension HomeViewController: PHPickerViewControllerDelegate{
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true)
-        
+        picker.dismiss(animated: true, completion: nil)
+
         guard let itemProvider = results.first?.itemProvider else { return }
-        
         if itemProvider.canLoadObject(ofClass: UIImage.self) {
             itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
                 DispatchQueue.global(qos: .background).async { [weak self] in
                     guard let strongSelf = self else { return }
                     if let image = image as? UIImage,
                        let pixelBuffer = image.convertToBuffer() {
-                        strongSelf.capturedImage = image
                         strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime, fps  in
-                            strongSelf.handleDataFromModel(results: results,
-                                                           inferenceTime: Float(inferenceTime),
-                                                           fps: Double(fps))
+               
+                            // Hiển thị ảnh chụp lên UI ngay (nếu có)
+                            DispatchQueue.main.async {
+                                strongSelf.capturedImage = image
+                                strongSelf.handleDataFromModel(results: results,
+                                                               inferenceTime: Float(inferenceTime),
+                                                               fps: Double(fps))
+                            }
                         }
                     } else if let error = error {
                         print("Error loading image: \(error.localizedDescription)")

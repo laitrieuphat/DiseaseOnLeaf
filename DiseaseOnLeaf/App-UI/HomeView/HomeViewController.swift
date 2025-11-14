@@ -84,7 +84,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     var previewView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .systemGray
+        imageView.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 15
         imageView.image = nil
@@ -161,7 +161,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         
         
         previewView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -80).isActive = true
+        previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -90).isActive = true
         previewView.widthAnchor.constraint(equalToConstant: 300).isActive = true
         previewView.heightAnchor.constraint(equalToConstant: 450).isActive = true
         

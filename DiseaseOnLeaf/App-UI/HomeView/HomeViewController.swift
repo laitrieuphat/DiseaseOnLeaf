@@ -11,7 +11,6 @@ import TensorFlowLite
 import CoreVideo
 import PhotosUI
 
-
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     // MARK: - TFLite
@@ -30,6 +29,14 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         }
     }
     
+    var activityIndicator:UIActivityIndicatorView = {
+        var spinner = UIActivityIndicatorView(style: .large)
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.color = .white
+        spinner.hidesWhenStopped = true
+        return spinner
+    }()
+    
     
     private let predictionLabel: UILabel = {
         let l = UILabel()
@@ -47,7 +54,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     var captureImageBtn: UIButton = {
         let button = UIButton()
-        button.setTitle("Chụp ảnh", for: .normal)
+        button.setTitle("Capture Image", for: .normal)
         button.backgroundColor = .systemBlue
         button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -56,7 +63,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     var collectImageBtn: UIButton = {
         let button = UIButton()
-        button.setTitle("Mở bộ sưu tập", for: .normal)
+        button.setTitle("Open Gallary", for: .normal)
         button.backgroundColor = .systemOrange
         button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -65,7 +72,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     var detectImgByCamBtn: UIButton = {
         let button = UIButton()
-        button.setTitle("Nhận diện bệnh trên cây", for: .normal)
+        button.setTitle("Camera detect real time ", for: .normal)
         button.backgroundColor = .systemGray
         button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -96,21 +103,11 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Hệ Thống Nhận Diện Bệnh Trên Cây"
+        title = "Plant Disease Detection System"
         setupUI()
         setupModelAI()
-        
-        // Initialize UIImagePickerController for capturing images
-        pickerCaptureImg = UIImagePickerController()
-        pickerCaptureImg?.sourceType = .camera
-        pickerCaptureImg?.delegate = self
-        
-        // Initialize PHPickerViewController for selecting images from the gallery
-        var configuration = PHPickerConfiguration(photoLibrary: .shared())
-        configuration.filter = .images // Filter to show only images
-        configuration.selectionLimit = 1 // Allow only one image selection
-        pickerChooseGallary = PHPickerViewController(configuration: configuration)
-        pickerChooseGallary?.delegate = self
+        configurePickerControllers()
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -136,6 +133,21 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         self.interpreterManager.previewView = self.previewView
     }
     
+    private func configurePickerControllers() {
+        // Initialize UIImagePickerController for capturing images
+        pickerCaptureImg = UIImagePickerController()
+        pickerCaptureImg?.sourceType = .camera
+        pickerCaptureImg?.delegate = self
+        
+        // Initialize PHPickerViewController for selecting images from the gallery
+        var configuration = PHPickerConfiguration(photoLibrary: .shared())
+        configuration.filter = .images // Filter to show only images
+        configuration.selectionLimit = 1 // Allow only one image selection
+        pickerChooseGallary = PHPickerViewController(configuration: configuration)
+        pickerChooseGallary?.delegate = self
+    }
+
+    
     
     func setupUI(){
         view.addSubview(captureImageBtn)
@@ -144,11 +156,17 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         view.addSubview(previewView)
         view.addSubview(predictionLabel)
         
+        // Add the activity indicator to the previewView hierarchy
+        previewView.addSubview(activityIndicator)
+        
+        
         previewView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -80).isActive = true
         previewView.widthAnchor.constraint(equalToConstant: 300).isActive = true
         previewView.heightAnchor.constraint(equalToConstant: 450).isActive = true
         
+        activityIndicator.centerXAnchor.constraint(equalTo: previewView.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: previewView.centerYAnchor).isActive = true
         
         predictionLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 5).isActive = true
         predictionLabel.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
@@ -192,32 +210,41 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         guard let pickerChooseGallary = pickerChooseGallary else {return}
         present(pickerChooseGallary , animated: true)
     }
+    
+    func showLoadingSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+        }
+    }
+    
+    func hideLoadingSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+        }
+    }
 }
 
 extension HomeViewController : UIImagePickerControllerDelegate{
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+        // You can add any other actions here, such as logging the cancellation
+        print("Image picker was cancelled.")
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        
         picker.dismiss(animated: true, completion: nil)
-        guard let image = info[.originalImage] as? UIImage else { return }
+        guard let selectedImage = info[.originalImage] as? UIImage else { return }
         
         // Chuyển sang pixel buffer và gọi model trên background queue
+        guard let pixelBuffer = selectedImage.convertToBuffer() else {return}
         DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self = self else { return }
-            guard let pixelBuffer = image.convertToBuffer() else {
-                print("Failed to convert UIImage to CVPixelBuffer")
-                return}
-            DispatchQueue.global(qos: .background).async { [weak self] in
-                guard let strongSelf = self else { return }
-
-                strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
-                    DispatchQueue.main.async {
-                        strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
-                        strongSelf.capturedImage = image
-                    }
+            guard let strongSelf = self else { return }
+            strongSelf.showLoadingSpinner()
+            strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
+                DispatchQueue.main.async {
+                    strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
+                    strongSelf.capturedImage = selectedImage
+                    strongSelf.hideLoadingSpinner()
                 }
             }
         }
@@ -227,7 +254,6 @@ extension HomeViewController : UIImagePickerControllerDelegate{
 extension HomeViewController: PHPickerViewControllerDelegate{
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true, completion: nil)
-
         guard let itemProvider = results.first?.itemProvider else { return }
         if itemProvider.canLoadObject(ofClass: UIImage.self) {
             itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
@@ -235,14 +261,16 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                     guard let strongSelf = self else { return }
                     if let image = image as? UIImage,
                        let pixelBuffer = image.convertToBuffer() {
+                        strongSelf.showLoadingSpinner()
                         strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime, fps  in
-               
+                            
                             // Hiển thị ảnh chụp lên UI ngay (nếu có)
                             DispatchQueue.main.async {
                                 strongSelf.capturedImage = image
                                 strongSelf.handleDataFromModel(results: results,
                                                                inferenceTime: Float(inferenceTime),
                                                                fps: Double(fps))
+                                strongSelf.hideLoadingSpinner()
                             }
                         }
                     } else if let error = error {

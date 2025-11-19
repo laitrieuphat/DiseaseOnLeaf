@@ -1,6 +1,8 @@
+Đây là các bước để chạy project "Nhận diện bệnh trên lá":
 
-Bước 1: clone project.
-Bước 2: xoá hết file pod và pod locks (nếu có).
-Bước 3: pod install (cài đặt thư viện), sau khi successed chọn file .xcworkspace và chạy project.
-Bước 4: nếu chạy trên physic device cần phải có apple ID ( chọn vào project -> Targets -> singing and capabilities -> Team -> add account).
-Bước 5: chọn tới thiết bị di động mình run (cmd+r) or build(cmd+b) -> nhớ chọn đúng target project.
+- Bước 1: clone project.
+- Bước 2: xoá hết file pod và pod locks (nếu có).
+- Bước 3: pod install (cài đặt thư viện), sau khi successed chọn file .xcworkspace và chạy project.
+- Bước 4: nếu chạy trên physic device cần phải có apple ID ( chọn vào project -> Targets -> singing and capabilities -> Team -> add account).
+- Bước 5: chọn tới thiết bị di động mình run (cmd+r) or build(cmd+b) -> nhớ chọn đúng target project.
+=> có thể thay thế thế file .tflite và lables theo từng loại lá  (optional )

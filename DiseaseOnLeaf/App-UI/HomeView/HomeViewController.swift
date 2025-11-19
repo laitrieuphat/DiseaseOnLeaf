@@ -91,6 +91,17 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         return imageView
     }()
     
+    // Heatmap overlay shown on top of previewView when a heatmap is generated
+    private var heatmapImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.contentMode = .scaleAspectFit
+        iv.backgroundColor = .clear
+        iv.isHidden = true
+        iv.alpha = 0.8
+        return iv
+    }()
+    
     var capturedImageLabel: UILabel = {
         let label = UILabel()
         label.text = "Captured Image"
@@ -154,19 +165,31 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         view.addSubview(collectImageBtn)
         view.addSubview(detectImgByCamBtn)
         view.addSubview(previewView)
+        // attach heatmap overlay to preview
+        previewView.addSubview(heatmapImageView)
+        // allow tapping the preview to toggle the heatmap overlay
+        previewView.isUserInteractionEnabled = true
+        let heatTap = UITapGestureRecognizer(target: self, action: #selector(tapOnHeatImage))
+        previewView.addGestureRecognizer(heatTap)
         view.addSubview(predictionLabel)
-        
+
         // Add the activity indicator to the previewView hierarchy
         previewView.addSubview(activityIndicator)
         
+        
+        activityIndicator.centerXAnchor.constraint(equalTo: previewView.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: previewView.centerYAnchor).isActive = true
         
         previewView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -90).isActive = true
         previewView.widthAnchor.constraint(equalToConstant: 300).isActive = true
         previewView.heightAnchor.constraint(equalToConstant: 450).isActive = true
         
-        activityIndicator.centerXAnchor.constraint(equalTo: previewView.centerXAnchor).isActive = true
-        activityIndicator.centerYAnchor.constraint(equalTo: previewView.centerYAnchor).isActive = true
+        // heatmap overlay fills previewView
+        heatmapImageView.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
+        heatmapImageView.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
+        heatmapImageView.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
+        heatmapImageView.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
         
         predictionLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 5).isActive = true
         predictionLabel.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
@@ -222,6 +245,12 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             self.activityIndicator.stopAnimating()
         }
     }
+    
+    @objc func tapOnHeatImage(){
+        DispatchQueue.main.async {
+            self.heatmapImageView.isHidden.toggle()
+        }
+    }
 }
 
 extension HomeViewController : UIImagePickerControllerDelegate{
@@ -244,11 +273,19 @@ extension HomeViewController : UIImagePickerControllerDelegate{
                 DispatchQueue.main.async {
                     strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
                     strongSelf.capturedImage = selectedImage
-                    strongSelf.hideLoadingSpinner()
-                }
-            }
-        }
-    }
+                    // start generating heatmap (may be slow) and show it when ready
+                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
+                        DispatchQueue.main.async {
+                            if let heat = heatmap {
+                                strongSelf.heatmapImageView.image = heat
+                            }
+                            strongSelf.hideLoadingSpinner()
+                        }
+                    }
+                 }
+             }
+         }
+     }
 }
 
 extension HomeViewController: PHPickerViewControllerDelegate{
@@ -270,7 +307,15 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                                 strongSelf.handleDataFromModel(results: results,
                                                                inferenceTime: Float(inferenceTime),
                                                                fps: Double(fps))
-                                strongSelf.hideLoadingSpinner()
+                                // start generating heatmap
+                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
+                                    DispatchQueue.main.async {
+                                        if let heat = heatmap {
+                                            strongSelf.heatmapImageView.image = heat
+                                        }
+                                        strongSelf.hideLoadingSpinner()
+                                    }
+                                }
                             }
                         }
                     } else if let error = error {

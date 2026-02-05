@@ -1,4 +1,4 @@
-Đây là các bước để chạy project "Nhận diện bệnh trên lá":
+Đây là các bước để chạy project "Nhận diện bệnh trên lá và quả trên cây sầu caocao, sầu riêng và xoài": (IOS native swift langugue)
 
 - Bước 1: clone project.
 - Bước 2: xoá hết file pod và pod locks (nếu có).

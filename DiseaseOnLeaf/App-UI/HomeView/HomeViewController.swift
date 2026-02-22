@@ -217,6 +217,36 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         
     }
     
+    private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
+        // Process results on the main thread
+        DispatchQueue.main.async {
+            let topResults = results.topK(k: 1)
+            
+            print("Result: \(topResults)")
+            print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
+            
+            var predictionText = "Predictions:\n"
+            for (index, score) in topResults {
+                let label = self.interpreterManager.labels[index]
+                predictionText += "\(label): \(String(format: "%.2f", score * 100))%\n"
+            }
+            predictionText += String(format: "Inference time: %.2f ms", inferenceTime)
+            self.predictionLabel.text = predictionText
+        }
+    }
+
+    func showLoadingSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+        }
+    }
+    
+    func hideLoadingSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+        }
+    }
+    
     @objc func cameraButtonTapped() {
         let cameraVC = CameraViewController()
         cameraVC.interpreterManager = self.interpreterManager
@@ -234,18 +264,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         present(pickerChooseGallary , animated: true)
     }
     
-    func showLoadingSpinner() {
-        DispatchQueue.main.async {
-            self.activityIndicator.startAnimating()
-        }
-    }
-    
-    func hideLoadingSpinner() {
-        DispatchQueue.main.async {
-            self.activityIndicator.stopAnimating()
-        }
-    }
-    
     @objc func tapOnHeatImage(){
         DispatchQueue.main.async {
             self.heatmapImageView.isHidden.toggle()
@@ -261,27 +279,27 @@ extension HomeViewController : UIImagePickerControllerDelegate{
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        self.showLoadingSpinner()
         picker.dismiss(animated: true, completion: nil)
         guard let selectedImage = info[.originalImage] as? UIImage else { return }
-        
         // Chuyển sang pixel buffer và gọi model trên background queue
         guard let pixelBuffer = selectedImage.convertToBuffer() else {return}
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let strongSelf = self else { return }
-            strongSelf.showLoadingSpinner()
             strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
                 DispatchQueue.main.async {
+                    strongSelf.hideLoadingSpinner()
                     strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
                     strongSelf.capturedImage = selectedImage
                     // start generating heatmap (may be slow) and show it when ready
-                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
-                        DispatchQueue.main.async {
-                            if let heat = heatmap {
-                                strongSelf.heatmapImageView.image = heat
-                            }
-                            strongSelf.hideLoadingSpinner()
-                        }
-                    }
+//                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
+//                        DispatchQueue.main.async {
+//                            if let heat = heatmap {
+//                                strongSelf.heatmapImageView.image = heat
+//                            }
+//                            strongSelf.hideLoadingSpinner()
+//                        }
+//                    }
                  }
              }
          }
@@ -290,6 +308,7 @@ extension HomeViewController : UIImagePickerControllerDelegate{
 
 extension HomeViewController: PHPickerViewControllerDelegate{
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        self.showLoadingSpinner()
         picker.dismiss(animated: true, completion: nil)
         guard let itemProvider = results.first?.itemProvider else { return }
         if itemProvider.canLoadObject(ofClass: UIImage.self) {
@@ -298,24 +317,23 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                     guard let strongSelf = self else { return }
                     if let image = image as? UIImage,
                        let pixelBuffer = image.convertToBuffer() {
-                        strongSelf.showLoadingSpinner()
                         strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime, fps  in
                             
                             // Hiển thị ảnh chụp lên UI ngay (nếu có)
                             DispatchQueue.main.async {
+                                strongSelf.hideLoadingSpinner()
                                 strongSelf.capturedImage = image
                                 strongSelf.handleDataFromModel(results: results,
                                                                inferenceTime: Float(inferenceTime),
                                                                fps: Double(fps))
                                 // start generating heatmap
-                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
-                                    DispatchQueue.main.async {
-                                        if let heat = heatmap {
-                                            strongSelf.heatmapImageView.image = heat
-                                        }
-                                        strongSelf.hideLoadingSpinner()
-                                    }
-                                }
+//                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
+//                                    DispatchQueue.main.async {
+//                                        if let heat = heatmap {
+//                                            strongSelf.heatmapImageView.image = heat
+//                                        }
+//                                    }
+//                                }
                             }
                         }
                     } else if let error = error {
@@ -323,24 +341,6 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                     }
                 }
             }
-        }
-    }
-    
-    private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
-        // Process results on the main thread
-        DispatchQueue.main.async {
-            let topResults = results.topK(k: 1)
-            
-            print("Result: \(topResults)")
-            print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
-            
-            var predictionText = "Predictions:\n"
-            for (index, score) in topResults {
-                let label = self.interpreterManager.labels[index]
-                predictionText += "\(label): \(String(format: "%.2f", score * 100))%\n"
-            }
-            predictionText += String(format: "Inference time: %.2f ms", inferenceTime)
-            self.predictionLabel.text = predictionText
         }
     }
 }

@@ -311,7 +311,7 @@ class TFLiteInterpreterManager {
     ///   - stride: stride for sliding window (in pixels)
     ///   - completion: called on main thread with the resulting heatmap UIImage sized inputWidth x inputHeight, or nil on failure.
     public func generateOcclusionHeatmap(for image: UIImage, patchSize: Int = 28, stride: Int = 14, completion: @escaping (UIImage?) -> Void) {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { DispatchQueue.main.async { completion(nil) }; return }
             // Resize to model input size (scale 1.0)
             UIGraphicsBeginImageContextWithOptions(CGSize(width: self.inputWidth, height: self.inputHeight), false, 1.0)

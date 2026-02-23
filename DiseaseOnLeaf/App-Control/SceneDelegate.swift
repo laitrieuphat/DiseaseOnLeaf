@@ -15,8 +15,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        let homeVC = HomeViewController()
-        window?.rootViewController = UINavigationController(rootViewController: homeVC)
+        let loginVC = LoginViewController()
+        window?.rootViewController = UINavigationController(rootViewController: loginVC)
         window?.makeKeyAndVisible()
     }
 
@@ -49,5 +49,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
 
+}
+
+extension SceneDelegate {
+    // Hàm static để dễ dàng truy cập từ bất kỳ ViewController nào
+    static func setRootViewController(_ vc: UIViewController, animated: Bool = true) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let delegate = windowScene.delegate as? SceneDelegate,
+              let window = delegate.window else { return }
+        
+        window.rootViewController = vc
+        
+        if animated {
+            UIView.transition(with: window,
+                              duration: 0.3,
+                              options: .transitionFlipFromLeft, // Hiệu ứng lật trang cho Logout
+                              animations: nil,
+                              completion: nil)
+        }
+    }
 }
 

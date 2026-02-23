@@ -87,7 +87,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         imageView.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 15
-        imageView.image = nil
+        imageView.image = UIImage(named: "photo-camera")
         return imageView
     }()
     
@@ -215,7 +215,40 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         captureImageBtn.addTarget(self, action: #selector(openCamTapped), for: .touchUpInside)
         detectImgByCamBtn.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
         
+        setupNavigationBar()
+        
     }
+    
+//    private func setupLogoutButton() {
+//            let logoutBtn = UIButton(type: .system)
+//            logoutBtn.setTitle("Đăng Xuất", for: .normal)
+//            logoutBtn.setTitleColor(.red, for: .normal)
+//            logoutBtn.addTarget(self, action: #selector(handleLogout), for: .touchUpInside)
+//            
+//            view.addSubview(logoutBtn)
+//            logoutBtn.translatesAutoresizingMaskIntoConstraints = false
+//            NSLayoutConstraint.activate([
+//                logoutBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//                logoutBtn.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+//            ])
+//        }
+    
+    private func setupNavigationBar() {
+        let logoutIcon = UIImage(systemName: "rectangle.portrait.and.arrow.right")
+            // Tạo nút Logout với kiểu chữ (hoặc bạn có thể dùng System Item)
+        let logoutButton = UIBarButtonItem(
+            image: logoutIcon,
+            style: .plain,
+            target: self,
+            action: #selector(handleLogout)
+        )
+            
+            // Đổi màu nút sang màu đỏ để cảnh báo (tùy chọn)
+//            logoutButton.tintColor = .systemRed
+            
+            // Gán vào bên phải của Navigation Bar
+            self.navigationItem.rightBarButtonItem = logoutButton
+        }
     
     private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
         // Process results on the main thread
@@ -269,6 +302,27 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             self.heatmapImageView.isHidden.toggle()
         }
     }
+    
+    @objc private func handleLogout() {
+            // 1. Hiển thị Alert xác nhận
+            let alert = UIAlertController(title: "Đăng xuất", message: "Bạn có chắc chắn muốn thoát?", preferredStyle: .actionSheet)
+            
+            alert.addAction(UIAlertAction(title: "Thoát ngay", style: .destructive, handler: { _ in
+                self.performLogout()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Hủy", style: .cancel))
+            present(alert, animated: true)
+        }
+
+        private func performLogout() {
+            // 2. Xóa Token/User Session trong Keychain hoặc UserDefaults (nếu có)
+            // UserDefaults.standard.removeObject(forKey: "user_token")
+
+            // 3. Quay về màn hình Login
+            let loginVC = LoginViewController()
+            SceneDelegate.setRootViewController(loginVC)
+        }
 }
 
 extension HomeViewController : UIImagePickerControllerDelegate{
@@ -279,18 +333,19 @@ extension HomeViewController : UIImagePickerControllerDelegate{
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        self.showLoadingSpinner()
         picker.dismiss(animated: true, completion: nil)
         guard let selectedImage = info[.originalImage] as? UIImage else { return }
         // Chuyển sang pixel buffer và gọi model trên background queue
         guard let pixelBuffer = selectedImage.convertToBuffer() else {return}
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let strongSelf = self else { return }
+            strongSelf.showLoadingSpinner()
             strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
                 DispatchQueue.main.async {
-                    strongSelf.hideLoadingSpinner()
                     strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
                     strongSelf.capturedImage = selectedImage
+                    strongSelf.hideLoadingSpinner()
+                    
                     // start generating heatmap (may be slow) and show it when ready
 //                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
 //                        DispatchQueue.main.async {
@@ -308,7 +363,6 @@ extension HomeViewController : UIImagePickerControllerDelegate{
 
 extension HomeViewController: PHPickerViewControllerDelegate{
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        self.showLoadingSpinner()
         picker.dismiss(animated: true, completion: nil)
         guard let itemProvider = results.first?.itemProvider else { return }
         if itemProvider.canLoadObject(ofClass: UIImage.self) {
@@ -317,15 +371,15 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                     guard let strongSelf = self else { return }
                     if let image = image as? UIImage,
                        let pixelBuffer = image.convertToBuffer() {
+                        strongSelf.showLoadingSpinner()
                         strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTime, fps  in
                             
                             // Hiển thị ảnh chụp lên UI ngay (nếu có)
                             DispatchQueue.main.async {
-                                strongSelf.hideLoadingSpinner()
                                 strongSelf.capturedImage = image
-                                strongSelf.handleDataFromModel(results: results,
-                                                               inferenceTime: Float(inferenceTime),
-                                                               fps: Double(fps))
+                                strongSelf.handleDataFromModel(results: results,inferenceTime: Float(inferenceTime),fps: Double(fps))
+                                strongSelf.hideLoadingSpinner()
+
                                 // start generating heatmap
 //                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
 //                                    DispatchQueue.main.async {

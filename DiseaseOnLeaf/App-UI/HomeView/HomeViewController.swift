@@ -12,6 +12,34 @@ import CoreVideo
 import PhotosUI
 
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
+    private lazy var shippingSpeedButton: UIButton = {
+      var config = UIButton.Configuration.tinted()
+      config.buttonSize = .medium
+      config.cornerStyle = .medium
+      config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+        var outgoing = incoming
+        outgoing.font = UIFont.preferredFont(forTextStyle: .headline)
+        return outgoing
+      }
+
+      let button = UIButton(type: .system)
+      button.configuration = config
+      button.showsMenuAsPrimaryAction = true
+      button.changesSelectionAsPrimaryAction = true
+
+      button.translatesAutoresizingMaskIntoConstraints = false
+      button.setTitle("Shipping Speed", for: .normal)
+      button.menu = UIMenu(children: [
+        UIAction(title: "Express Shipping", image: UIImage(systemName: "hare.fill")) { _ in
+          print("Express Shipping Selected")
+        },
+        UIAction(title: "Standard Shipping", image: UIImage(systemName: "tortoise.fill")) { _ in
+          print("Standard Shipping Selected")
+        }
+      ])
+      return button
+    }()
+    
     
     // MARK: - TFLite
     private var interpreterManager: TFLiteInterpreterManager!
@@ -42,19 +70,19 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         let l = UILabel()
         l.translatesAutoresizingMaskIntoConstraints = false
         l.backgroundColor = UIColor.white.withAlphaComponent(0.5)
-        l.textColor = .black
+        l.textColor = .lightGray
         l.font = UIFont.systemFont(ofSize: 15, weight: .bold)
         l.numberOfLines = 0
         l.textAlignment = .center
         l.layer.cornerRadius = 8
         l.clipsToBounds = true
-        l.text = "Predictions will appear here"
+        l.text = "Vui lòng chọn hoặc chụp ảnh để nhận diện"
         return l
     }()
     
     var captureImageBtn: UIButton = {
         let button = UIButton()
-        button.setTitle("Capture Image", for: .normal)
+        button.setTitle("Chụp ảnh", for: .normal)
         button.backgroundColor = .systemBlue
         button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -63,17 +91,18 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     var collectImageBtn: UIButton = {
         let button = UIButton()
-        button.setTitle("Open Gallary", for: .normal)
+        button.setTitle("Chọn ảnh", for: .normal)
         button.backgroundColor = .systemOrange
         button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
+    
         return button
     }()
     
     var detectImgByCamBtn: UIButton = {
         let button = UIButton()
-        button.setTitle("Camera detect real time ", for: .normal)
-        button.backgroundColor = .systemGray
+        button.setTitle("Nhận diện bệnh", for: .normal)
+        button.backgroundColor = .navAppearence
         button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -83,11 +112,12 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     var previewView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
+        imageView.contentMode = .scaleToFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 15
-        imageView.image = UIImage(named: "photo-camera")
+        imageView.layer.borderWidth = 0.1
+        imageView.image = UIImage(named: "icon_mamxanh")
         return imageView
     }()
     
@@ -114,7 +144,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Plant Disease Detection System"
+        title = "Hệ Thống Nhận Diện Bệnh Lá"
         setupUI()
         setupModelAI()
         configurePickerControllers()
@@ -126,11 +156,11 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         navigationController?.navigationBar.prefersLargeTitles = false
         
         let appearance = UINavigationBarAppearance()
-        appearance.backgroundColor = .mint
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+        appearance.backgroundColor = .navAppearence
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
         
-        navigationController?.navigationBar.tintColor = .black
+        navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
@@ -181,9 +211,9 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         activityIndicator.centerYAnchor.constraint(equalTo: previewView.centerYAnchor).isActive = true
         
         previewView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -90).isActive = true
-        previewView.widthAnchor.constraint(equalToConstant: 300).isActive = true
-        previewView.heightAnchor.constraint(equalToConstant: 450).isActive = true
+        previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -120).isActive = true
+        previewView.widthAnchor.constraint(equalToConstant: 350).isActive = true
+        previewView.heightAnchor.constraint(equalToConstant: 350).isActive = true
         
         // heatmap overlay fills previewView
         heatmapImageView.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
@@ -191,7 +221,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         heatmapImageView.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
         heatmapImageView.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
         
-        predictionLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 5).isActive = true
+        predictionLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 20).isActive = true
         predictionLabel.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
         predictionLabel.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
         
@@ -203,12 +233,12 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         //
         collectImageBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
         collectImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
-        collectImageBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        collectImageBtn.widthAnchor.constraint(equalToConstant: 150).isActive = true
         collectImageBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         captureImageBtn.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
         captureImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
-        captureImageBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        captureImageBtn.widthAnchor.constraint(equalToConstant: 150).isActive = true
         captureImageBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         collectImageBtn.addTarget(self, action: #selector(openGalleryTapped), for: .touchUpInside)
@@ -219,35 +249,26 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         
     }
     
-//    private func setupLogoutButton() {
-//            let logoutBtn = UIButton(type: .system)
-//            logoutBtn.setTitle("Đăng Xuất", for: .normal)
-//            logoutBtn.setTitleColor(.red, for: .normal)
-//            logoutBtn.addTarget(self, action: #selector(handleLogout), for: .touchUpInside)
-//            
-//            view.addSubview(logoutBtn)
-//            logoutBtn.translatesAutoresizingMaskIntoConstraints = false
-//            NSLayoutConstraint.activate([
-//                logoutBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-//                logoutBtn.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-//            ])
-//        }
-    
     private func setupNavigationBar() {
-        let logoutIcon = UIImage(systemName: "rectangle.portrait.and.arrow.right")
-            // Tạo nút Logout với kiểu chữ (hoặc bạn có thể dùng System Item)
         let logoutButton = UIBarButtonItem(
-            image: logoutIcon,
+            image: UIImage(systemName: "rectangle.portrait.and.arrow.right"),
             style: .plain,
             target: self,
             action: #selector(handleLogout)
         )
-            
-            // Đổi màu nút sang màu đỏ để cảnh báo (tùy chọn)
-//            logoutButton.tintColor = .systemRed
-            
-            // Gán vào bên phải của Navigation Bar
-            self.navigationItem.rightBarButtonItem = logoutButton
+
+        let accountButton = UIBarButtonItem(
+          title: "Sign-in",
+          image: UIImage(systemName: "person.crop.circle"),
+          primaryAction: UIAction { _ in
+              self.navigationController?.pushViewController(
+              UINavigationController(rootViewController: LoginViewController()),
+              animated: true
+            )
+          },
+          menu: nil
+        )
+        navigationItem.rightBarButtonItems = [logoutButton,accountButton]
         }
     
     private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {

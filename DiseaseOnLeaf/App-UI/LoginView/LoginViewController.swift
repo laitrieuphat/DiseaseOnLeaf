@@ -68,6 +68,7 @@ class LoginViewController: UIViewController {
     
     // MARK: - Setup Layout
     private func setupUI() {
+        view.backgroundColor = .backgroundHome
         view.addSubview(titleLabel)
         view.addSubview(usernameTextField)
         view.addSubview(passwordTextField)

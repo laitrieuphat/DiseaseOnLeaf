@@ -4,6 +4,3 @@ gi_sat
 la_khoe
 thoi_qua_den
 qua_khoe
-
-
-

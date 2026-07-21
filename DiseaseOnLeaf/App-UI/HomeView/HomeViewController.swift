@@ -318,20 +318,20 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         navigationItem.rightBarButtonItems = [logoutButton]
     }
     
-    private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
+    private func handleDataOutputFromAIModel(results: [Float], inferenceTime: Float, fps: Double) {
         // Process results on the main thread
         DispatchQueue.main.async {
             let topResults = results.topK(k: 1)
-            
             print("Result: \(topResults)")
             print("Inference Time: \(inferenceTime * 1000) ms, FPS: \(fps)")
             
-            var predictionText = "Predictions:\n"
+            var predictionText = "Kết quả dự đoán: "
             for (index, score) in topResults {
                 let label = self.interpreterManager.arr_labels[index]
-                predictionText += "\(label): \(String(format: "%.2f", score * 100))%\n"
+                predictionText += "\(label)\n "
+                predictionText += " \(String(format: "Độ chính xác: %.2f", score * 100))%\n"
             }
-            predictionText += String(format: "Inference time: %.2f ms", inferenceTime)
+            predictionText += String(format: "Thời gian suy luận: %.2f ms", inferenceTime)
             self.predictionLabel.text = predictionText
         }
     }
@@ -349,7 +349,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     @objc func cameraButtonTapped() {
-        let cameraVC = CameraViewController()
+        let cameraVC = CameraDetectionViewController()
         cameraVC.interpreterManager = self.interpreterManager
         self.navigationController?.pushViewController(cameraVC, animated: true)
     }
@@ -409,19 +409,10 @@ extension HomeViewController : UIImagePickerControllerDelegate{
             strongSelf.showLoadingSpinner()
             strongSelf.interpreterManager.runModel(pixelBuffer: pixelBuffer) { results, inferenceTimeMs, fps  in
                 DispatchQueue.main.async {
-                    strongSelf.handleDataFromModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
+                    strongSelf.handleDataOutputFromAIModel(results: results, inferenceTime: Float(inferenceTimeMs), fps: fps)
                     strongSelf.capturedImage = selectedImage
                     strongSelf.hideLoadingSpinner()
                     
-                    // start generating heatmap (may be slow) and show it when ready
-                    //                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
-                    //                        DispatchQueue.main.async {
-                    //                            if let heat = heatmap {
-                    //                                strongSelf.heatmapImageView.image = heat
-                    //                            }
-                    //                            strongSelf.hideLoadingSpinner()
-                    //                        }
-                    //                    }
                 }
             }
         }
@@ -444,17 +435,8 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                             // Hiển thị ảnh chụp lên UI ngay (nếu có)
                             DispatchQueue.main.async {
                                 strongSelf.capturedImage = image
-                                strongSelf.handleDataFromModel(results: results,inferenceTime: Float(inferenceTime),fps: Double(fps))
-                                strongSelf.hideLoadingSpinner()
-                                
-                                // start generating heatmap
-                                //                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
-                                //                                    DispatchQueue.main.async {
-                                //                                        if let heat = heatmap {
-                                //                                            strongSelf.heatmapImageView.image = heat
-                                //                                        }
-                                //                                    }
-                                //                                }
+                                strongSelf.handleDataOutputFromAIModel(results: results,inferenceTime: Float(inferenceTime),fps: Double(fps))
+                                strongSelf.hideLoadingSpinner()                      }
                             }
                         }
                     } else if let error = error {

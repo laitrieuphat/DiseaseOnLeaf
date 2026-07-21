@@ -26,7 +26,7 @@ import AVFoundation
  qua_khoe
  */
 
-class CameraViewController: UIViewController {
+class CameraDetectionViewController: UIViewController {
     
     // MARK: - UI
     private var previewView = UIImageView()
@@ -170,7 +170,7 @@ class CameraViewController: UIViewController {
 }
 
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
-extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension CameraDetectionViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {

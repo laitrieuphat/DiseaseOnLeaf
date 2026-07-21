@@ -21,13 +21,13 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             outgoing.font = UIFont.preferredFont(forTextStyle: .subheadline)
             return outgoing
         }
-
+        
         let button = UIButton(type: .custom)
         button.configuration = config
         button.showsMenuAsPrimaryAction = true
         button.changesSelectionAsPrimaryAction = true
         button.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // TỰ ĐỘNG TẠO DANH SÁCH MENU TỪ ENUM
         let menuActions = AIModel.allCases.map { model in
             let isSelected = (model == AIManager.shared.currentModel)
@@ -41,7 +41,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
                 AIManager.shared.currentModel = model
             }
         }
-
+        
         button.menu = UIMenu(title: "Chọn Mô Hình AI", children: menuActions)
         return button
     }()
@@ -53,7 +53,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     // MARK: - Model info
     var pickerCaptureImg:UIImagePickerController?
     var pickerChooseGallary:PHPickerViewController?
-    
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
     var previewLayer: AVCaptureVideoPreviewLayer!
@@ -87,29 +86,52 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }()
     
     var captureImageBtn: UIButton = {
-        let button = UIButton()
-        button.setTitle("Chụp ảnh", for: .normal)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 10
+        // Tạo 1 đối tượng từ Configuration
+        var config = UIButton.Configuration.gray()
+        config.title = "Chụp ảnh"
+        config.image = UIImage(systemName: "camera.fill")
+        config.imagePadding = 8
+        config.imagePlacement = .leading
+        config.baseForegroundColor = .navAppearence
+        config.background.backgroundColor = .butonHome
+        config.background.cornerRadius = 10
+        config.background.strokeColor = .navAppearence
+        config.background.strokeWidth = 1.0
+        
+        // Tạo 1 button với đối tưởng configuration
+        let button = UIButton(configuration: config, primaryAction: nil)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     var collectImageBtn: UIButton = {
-        let button = UIButton()
-        button.setTitle("Chọn ảnh", for: .normal)
-        button.backgroundColor = .systemOrange
-        button.layer.cornerRadius = 10
+        var config = UIButton.Configuration.plain()
+        config.title = "Chọn ảnh"
+        config.image = UIImage(systemName: "photo.fill")
+        config.imagePadding = 8
+        config.imagePlacement = .leading
+        config.baseForegroundColor = .navAppearence
+        config.background.backgroundColor = .butonHome
+        config.background.cornerRadius = 10
+        config.background.strokeColor = .navAppearence
+        config.background.strokeWidth = 1.0
+        let button = UIButton(configuration: config, primaryAction: nil)
         button.translatesAutoresizingMaskIntoConstraints = false
-    
         return button
     }()
     
     var detectImgByCamBtn: UIButton = {
-        let button = UIButton()
-        button.setTitle("Nhận diện bệnh", for: .normal)
-        button.backgroundColor = .navAppearence
-        button.layer.cornerRadius = 10
+        var config = UIButton.Configuration.plain()
+        config.title = "Nhận diện bệnh"
+        config.image = UIImage(systemName: "magnifyingglass")
+        config.imagePadding = 8
+        config.imagePlacement = .leading
+        config.baseForegroundColor = .navAppearence
+        config.background.backgroundColor = .butonHome
+        config.background.cornerRadius = 10
+        config.background.strokeColor = .navAppearence
+        config.background.strokeWidth = 1.0
+        let button = UIButton(configuration: config, primaryAction: nil)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -128,15 +150,15 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }()
     
     // Heatmap overlay shown on top of previewView when a heatmap is generated
-//    private var heatmapImageView: UIImageView = {
-//        let iv = UIImageView()
-//        iv.translatesAutoresizingMaskIntoConstraints = false
-//        iv.contentMode = .scaleAspectFit
-//        iv.backgroundColor = .clear
-//        iv.isHidden = true
-//        iv.alpha = 0.8
-//        return iv
-//    }()
+    //    private var heatmapImageView: UIImageView = {
+    //        let iv = UIImageView()
+    //        iv.translatesAutoresizingMaskIntoConstraints = false
+    //        iv.contentMode = .scaleAspectFit
+    //        iv.backgroundColor = .clear
+    //        iv.isHidden = true
+    //        iv.alpha = 0.8
+    //        return iv
+    //    }()
     
     var capturedImageLabel: UILabel = {
         let label = UILabel()
@@ -152,21 +174,14 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         super.viewDidLoad()
         title = "Hệ Thống Nhận Diện Bệnh Lá"
         setupUI()
-       
+        setupModelAI()
+        setupNotification()
         configurePickerControllers()
         
-        // CHẠY LẦN ĐẦU TIÊN: Đồng bộ giao diện ngay khi vừa load màn hình
-        setupModelAI()
-        
-        setupNotification()
-
     }
     
-    // 6. Hàm cập nhật UI dùng chung (Đọc dữ liệu từ Singleton và đưa lên Labels)
     private func setupModelAI() {
         let currentModel = AIManager.shared.currentModel
-        
-        
         self.interpreterManager = TFLiteInterpreterManager(modelFileName: currentModel.rawValue,
                                                            modelFileType: "tflite")
         self.interpreterManager.loadModel()
@@ -177,7 +192,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     
-
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -210,7 +225,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         pickerChooseGallary = PHPickerViewController(configuration: configuration)
         pickerChooseGallary?.delegate = self
     }
-
+    
     
     
     func setupUI(){
@@ -219,13 +234,13 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         view.addSubview(detectImgByCamBtn)
         view.addSubview(previewView)
         // attach heatmap overlay to preview
-//        previewView.addSubview(heatmapImageView)
+        //        previewView.addSubview(heatmapImageView)
         // allow tapping the preview to toggle the heatmap overlay
         previewView.isUserInteractionEnabled = true
         let heatTap = UITapGestureRecognizer(target: self, action: #selector(tapOnHeatImage))
         previewView.addGestureRecognizer(heatTap)
         view.addSubview(predictionLabel)
-
+        
         // Add the activity indicator to the previewView hierarchy
         previewView.addSubview(activityIndicator)
         
@@ -239,10 +254,10 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         previewView.heightAnchor.constraint(equalToConstant: 350).isActive = true
         
         // heatmap overlay fills previewView
-//        heatmapImageView.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
-//        heatmapImageView.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
-//        heatmapImageView.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
-//        heatmapImageView.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
+        //        heatmapImageView.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
+        //        heatmapImageView.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
+        //        heatmapImageView.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
+        //        heatmapImageView.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
         
         predictionLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 20).isActive = true
         predictionLabel.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
@@ -252,17 +267,17 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         detectImgByCamBtn.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50).isActive = true
         detectImgByCamBtn.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
         detectImgByCamBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
-        detectImgByCamBtn.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        detectImgByCamBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
         //
-        collectImageBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
+        collectImageBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor,constant: -10).isActive = true
         collectImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
         collectImageBtn.widthAnchor.constraint(equalToConstant: 150).isActive = true
-        collectImageBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        collectImageBtn.heightAnchor.constraint(equalToConstant: 45).isActive = true
         
-        captureImageBtn.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
+        captureImageBtn.leadingAnchor.constraint(equalTo: previewView.leadingAnchor,constant: 10).isActive = true
         captureImageBtn.bottomAnchor.constraint(equalTo: detectImgByCamBtn.topAnchor, constant: -20).isActive = true
         captureImageBtn.widthAnchor.constraint(equalToConstant: 150).isActive = true
-        captureImageBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        captureImageBtn.heightAnchor.constraint(equalToConstant: 45).isActive = true
         
         collectImageBtn.addTarget(self, action: #selector(openGalleryTapped), for: .touchUpInside)
         captureImageBtn.addTarget(self, action: #selector(openCamTapped), for: .touchUpInside)
@@ -278,7 +293,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         view.addSubview(optionalAIModelBtn)
         optionalAIModelBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
         optionalAIModelBtn.bottomAnchor.constraint(equalTo: previewView.topAnchor, constant: -15).isActive = true
-   
+        
         
     }
     
@@ -299,9 +314,9 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             target: self,
             action: #selector(handleLogout)
         )
-
+        
         navigationItem.rightBarButtonItems = [logoutButton]
-        }
+    }
     
     private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
         // Process results on the main thread
@@ -320,7 +335,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             self.predictionLabel.text = predictionText
         }
     }
-
+    
     func showLoadingSpinner() {
         DispatchQueue.main.async {
             self.activityIndicator.startAnimating()
@@ -352,23 +367,23 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     @objc func tapOnHeatImage(){
         DispatchQueue.main.async {
-//            self.heatmapImageView.isHidden.toggle()
+            //            self.heatmapImageView.isHidden.toggle()
         }
     }
     
     @objc private func handleLogout() {
-            // 1. Hiển thị Alert xác nhận
-            let alert = UIAlertController(title: "Đăng xuất", message: "Bạn có chắc chắn muốn thoát?", preferredStyle: .actionSheet)
-            
-            alert.addAction(UIAlertAction(title: "Thoát ngay", style: .destructive, handler: { _ in
-                let loginVC = LoginViewController()
-                SceneDelegate.setRootViewController(loginVC)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Hủy", style: .cancel))
-            present(alert, animated: true)
-        }
-
+        // 1. Hiển thị Alert xác nhận
+        let alert = UIAlertController(title: "Đăng xuất", message: "Bạn có chắc chắn muốn thoát?", preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Thoát ngay", style: .destructive, handler: { _ in
+            let loginVC = LoginViewController()
+            SceneDelegate.setRootViewController(loginVC)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Hủy", style: .cancel))
+        present(alert, animated: true)
+    }
+    
     
     @objc private func handleModelChanged() {
         DispatchQueue.main.async {
@@ -399,18 +414,18 @@ extension HomeViewController : UIImagePickerControllerDelegate{
                     strongSelf.hideLoadingSpinner()
                     
                     // start generating heatmap (may be slow) and show it when ready
-//                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
-//                        DispatchQueue.main.async {
-//                            if let heat = heatmap {
-//                                strongSelf.heatmapImageView.image = heat
-//                            }
-//                            strongSelf.hideLoadingSpinner()
-//                        }
-//                    }
-                 }
-             }
-         }
-     }
+                    //                    strongSelf.interpreterManager.generateOcclusionHeatmap(for: selectedImage) { heatmap in
+                    //                        DispatchQueue.main.async {
+                    //                            if let heat = heatmap {
+                    //                                strongSelf.heatmapImageView.image = heat
+                    //                            }
+                    //                            strongSelf.hideLoadingSpinner()
+                    //                        }
+                    //                    }
+                }
+            }
+        }
+    }
 }
 
 extension HomeViewController: PHPickerViewControllerDelegate{
@@ -431,15 +446,15 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                                 strongSelf.capturedImage = image
                                 strongSelf.handleDataFromModel(results: results,inferenceTime: Float(inferenceTime),fps: Double(fps))
                                 strongSelf.hideLoadingSpinner()
-
+                                
                                 // start generating heatmap
-//                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
-//                                    DispatchQueue.main.async {
-//                                        if let heat = heatmap {
-//                                            strongSelf.heatmapImageView.image = heat
-//                                        }
-//                                    }
-//                                }
+                                //                                strongSelf.interpreterManager.generateOcclusionHeatmap(for: image) { heatmap in
+                                //                                    DispatchQueue.main.async {
+                                //                                        if let heat = heatmap {
+                                //                                            strongSelf.heatmapImageView.image = heat
+                                //                                        }
+                                //                                    }
+                                //                                }
                             }
                         }
                     } else if let error = error {

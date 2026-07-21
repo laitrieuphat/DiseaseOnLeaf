@@ -20,7 +20,7 @@ class TFLiteInterpreterManager {
     private var interpreter: Interpreter?
     private let modelFileName: String
     private let modelFileType: String
-    private(set) var labels: [String] = []
+    private(set) var arr_labels: [String] = []
     
     
     private let inputWidth = 224
@@ -42,14 +42,14 @@ class TFLiteInterpreterManager {
     }
     
     
-    func loadLabels() {
-        guard let labelsPath = Bundle.main.path(forResource: "labels", ofType: "txt"),
+    func loadLabels(labelFile:String) {
+        guard let labelsPath = Bundle.main.path(forResource: labelFile, ofType: "txt"),
               let content = try? String(contentsOfFile: labelsPath, encoding: .utf8) else {
             print("Labels not found. Predictions will show indices.")
             return
         }
-        labels = content.components(separatedBy: .newlines).filter { !$0.isEmpty }
-        print("Loaded \(labels.count) labels.")
+        arr_labels = content.components(separatedBy: .newlines).filter { !$0.isEmpty }
+        print("Loaded \(arr_labels.count) labels.")
     }
     
     

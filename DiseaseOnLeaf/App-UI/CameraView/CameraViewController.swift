@@ -60,7 +60,7 @@ class CameraViewController: UIViewController {
     
     // MARK: - Camera
     private let captureSession = AVCaptureSession()
-    private var previewLayer: AVCaptureVideoPreviewLayer!
+    private var previewLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer()
     
     // MARK: - TFLite
      var interpreterManager: TFLiteInterpreterManager!
@@ -144,7 +144,7 @@ class CameraViewController: UIViewController {
         previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         previewLayer.videoGravity = .resizeAspectFill
         previewLayer.frame = previewView.bounds
-        previewView.layer.addSublayer(previewLayer)
+        previewView.layer.addSublayer(previewLayer )
         
         // Connection orientation
         if let connection = dataOutput.connection(with: .video),
@@ -186,8 +186,8 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             var outputText = ""
             if let result = topResult {
                 let label: String
-                if result.index < self.interpreterManager.labels.count {
-                    label = self.interpreterManager.labels[result.index]
+                if result.index < self.interpreterManager.arr_labels.count {
+                    label = self.interpreterManager.arr_labels[result.index]
                 } else {
                     label = "Index \(result.index)"
                 }

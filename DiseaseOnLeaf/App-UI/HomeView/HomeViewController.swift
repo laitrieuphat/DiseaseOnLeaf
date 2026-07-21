@@ -12,32 +12,38 @@ import CoreVideo
 import PhotosUI
 
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
-    private lazy var shippingSpeedButton: UIButton = {
-      var config = UIButton.Configuration.tinted()
-      config.buttonSize = .medium
-      config.cornerStyle = .medium
-      config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-        var outgoing = incoming
-        outgoing.font = UIFont.preferredFont(forTextStyle: .headline)
-        return outgoing
-      }
-
-      let button = UIButton(type: .system)
-      button.configuration = config
-      button.showsMenuAsPrimaryAction = true
-      button.changesSelectionAsPrimaryAction = true
-
-      button.translatesAutoresizingMaskIntoConstraints = false
-      button.setTitle("Shipping Speed", for: .normal)
-      button.menu = UIMenu(children: [
-        UIAction(title: "Express Shipping", image: UIImage(systemName: "hare.fill")) { _ in
-          print("Express Shipping Selected")
-        },
-        UIAction(title: "Standard Shipping", image: UIImage(systemName: "tortoise.fill")) { _ in
-          print("Standard Shipping Selected")
+    private lazy var optionalAIModelBtn: UIButton = {
+        var config = UIButton.Configuration.bordered()
+        config.buttonSize = .mini
+        config.cornerStyle = .small
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.preferredFont(forTextStyle: .subheadline)
+            return outgoing
         }
-      ])
-      return button
+
+        let button = UIButton(type: .custom)
+        button.configuration = config
+        button.showsMenuAsPrimaryAction = true
+        button.changesSelectionAsPrimaryAction = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+
+        // TỰ ĐỘNG TẠO DANH SÁCH MENU TỪ ENUM
+        let menuActions = AIModel.allCases.map { model in
+            let isSelected = (model == AIManager.shared.currentModel)
+            
+            return UIAction(
+                title: model.rawValue,
+                image: UIImage(systemName: model.systemImageName),
+                state: isSelected ? .on : .off
+            ) { _ in
+                // HÀNH ĐỘNG KHI BẤM CHỌN KẾ TIẾP: Cập nhật vào Singleton toàn cục
+                AIManager.shared.currentModel = model
+            }
+        }
+
+        button.menu = UIMenu(title: "Chọn Mô Hình AI", children: menuActions)
+        return button
     }()
     
     
@@ -116,21 +122,21 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 15
-        imageView.layer.borderWidth = 0.1
+        imageView.layer.borderWidth = 0.5
         imageView.image = UIImage(named: "icon_mamxanh")
         return imageView
     }()
     
     // Heatmap overlay shown on top of previewView when a heatmap is generated
-    private var heatmapImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        iv.contentMode = .scaleAspectFit
-        iv.backgroundColor = .clear
-        iv.isHidden = true
-        iv.alpha = 0.8
-        return iv
-    }()
+//    private var heatmapImageView: UIImageView = {
+//        let iv = UIImageView()
+//        iv.translatesAutoresizingMaskIntoConstraints = false
+//        iv.contentMode = .scaleAspectFit
+//        iv.backgroundColor = .clear
+//        iv.isHidden = true
+//        iv.alpha = 0.8
+//        return iv
+//    }()
     
     var capturedImageLabel: UILabel = {
         let label = UILabel()
@@ -146,9 +152,34 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         super.viewDidLoad()
         title = "Hệ Thống Nhận Diện Bệnh Lá"
         setupUI()
-        setupModelAI()
+       
         configurePickerControllers()
+        
+        // CHẠY LẦN ĐẦU TIÊN: Đồng bộ giao diện ngay khi vừa load màn hình
+        setupModelAI()
+        
+        setupNotification()
 
+    }
+    
+    // 6. Hàm cập nhật UI dùng chung (Đọc dữ liệu từ Singleton và đưa lên Labels)
+    private func setupModelAI() {
+        let currentModel = AIManager.shared.currentModel
+        
+        
+        self.interpreterManager = TFLiteInterpreterManager(modelFileName: currentModel.rawValue,
+                                                           modelFileType: "tflite")
+        self.interpreterManager.loadModel()
+        self.interpreterManager.loadLabels(labelFile: currentModel.labelsFileName)
+        self.interpreterManager.previewView = self.previewView
+        print("🤖 Model: \(currentModel.rawValue)")
+        print("📂 File: \(currentModel.labelsFileName)")
+    }
+    
+    
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -164,14 +195,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
-    }
-    
-    private func setupModelAI() {
-        self.interpreterManager = TFLiteInterpreterManager(modelFileName: "efficientnet_b0_aug",
-                                                           modelFileType: "tflite")
-        self.interpreterManager.loadModel()
-        self.interpreterManager.loadLabels()
-        self.interpreterManager.previewView = self.previewView
     }
     
     private func configurePickerControllers() {
@@ -196,7 +219,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         view.addSubview(detectImgByCamBtn)
         view.addSubview(previewView)
         // attach heatmap overlay to preview
-        previewView.addSubview(heatmapImageView)
+//        previewView.addSubview(heatmapImageView)
         // allow tapping the preview to toggle the heatmap overlay
         previewView.isUserInteractionEnabled = true
         let heatTap = UITapGestureRecognizer(target: self, action: #selector(tapOnHeatImage))
@@ -211,15 +234,15 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         activityIndicator.centerYAnchor.constraint(equalTo: previewView.centerYAnchor).isActive = true
         
         previewView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -120).isActive = true
+        previewView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -100).isActive = true
         previewView.widthAnchor.constraint(equalToConstant: 350).isActive = true
         previewView.heightAnchor.constraint(equalToConstant: 350).isActive = true
         
         // heatmap overlay fills previewView
-        heatmapImageView.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
-        heatmapImageView.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
-        heatmapImageView.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
-        heatmapImageView.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
+//        heatmapImageView.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
+//        heatmapImageView.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
+//        heatmapImageView.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
+//        heatmapImageView.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
         
         predictionLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 20).isActive = true
         predictionLabel.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
@@ -245,11 +268,31 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         captureImageBtn.addTarget(self, action: #selector(openCamTapped), for: .touchUpInside)
         detectImgByCamBtn.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
         
-        setupNavigationBar()
+        setupUINavigationButtonBarItem()
+        setupButtonChooseModel()
         
     }
     
-    private func setupNavigationBar() {
+    
+    private func setupButtonChooseModel(){
+        view.addSubview(optionalAIModelBtn)
+        optionalAIModelBtn.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
+        optionalAIModelBtn.bottomAnchor.constraint(equalTo: previewView.topAnchor, constant: -15).isActive = true
+   
+        
+    }
+    
+    // 6. Đăng ký nhận thông báo thay đổi dữ liệu
+    private func setupNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleModelChanged),
+            name: AIManager.modelChangedNotification,
+            object: nil
+        )
+    }
+    
+    private func setupUINavigationButtonBarItem() {
         let logoutButton = UIBarButtonItem(
             image: UIImage(systemName: "rectangle.portrait.and.arrow.right"),
             style: .plain,
@@ -257,18 +300,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             action: #selector(handleLogout)
         )
 
-        let accountButton = UIBarButtonItem(
-          title: "Sign-in",
-          image: UIImage(systemName: "person.crop.circle"),
-          primaryAction: UIAction { _ in
-              self.navigationController?.pushViewController(
-              UINavigationController(rootViewController: LoginViewController()),
-              animated: true
-            )
-          },
-          menu: nil
-        )
-        navigationItem.rightBarButtonItems = [logoutButton,accountButton]
+        navigationItem.rightBarButtonItems = [logoutButton]
         }
     
     private func handleDataFromModel(results: [Float], inferenceTime: Float, fps: Double) {
@@ -281,7 +313,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             
             var predictionText = "Predictions:\n"
             for (index, score) in topResults {
-                let label = self.interpreterManager.labels[index]
+                let label = self.interpreterManager.arr_labels[index]
                 predictionText += "\(label): \(String(format: "%.2f", score * 100))%\n"
             }
             predictionText += String(format: "Inference time: %.2f ms", inferenceTime)
@@ -320,7 +352,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     @objc func tapOnHeatImage(){
         DispatchQueue.main.async {
-            self.heatmapImageView.isHidden.toggle()
+//            self.heatmapImageView.isHidden.toggle()
         }
     }
     
@@ -329,21 +361,20 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             let alert = UIAlertController(title: "Đăng xuất", message: "Bạn có chắc chắn muốn thoát?", preferredStyle: .actionSheet)
             
             alert.addAction(UIAlertAction(title: "Thoát ngay", style: .destructive, handler: { _ in
-                self.performLogout()
+                let loginVC = LoginViewController()
+                SceneDelegate.setRootViewController(loginVC)
             }))
             
             alert.addAction(UIAlertAction(title: "Hủy", style: .cancel))
             present(alert, animated: true)
         }
 
-        private func performLogout() {
-            // 2. Xóa Token/User Session trong Keychain hoặc UserDefaults (nếu có)
-            // UserDefaults.standard.removeObject(forKey: "user_token")
-
-            // 3. Quay về màn hình Login
-            let loginVC = LoginViewController()
-            SceneDelegate.setRootViewController(loginVC)
+    
+    @objc private func handleModelChanged() {
+        DispatchQueue.main.async {
+            self.setupModelAI()
         }
+    }
 }
 
 extension HomeViewController : UIImagePickerControllerDelegate{

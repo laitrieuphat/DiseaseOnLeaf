@@ -85,22 +85,29 @@ class ItemInforTableViewCell: UITableViewCell {
         ])
     }
     
-    func configure(with section: DiseaseSection) {
-        titleLabel.text = section.title
-        iconImageView.image = UIImage(systemName: section.iconName)
-        iconImageView.tintColor = section.iconColor
+    func configure(with item: DiseaseDetail, currentField: DiseaseDetail.CodingKeys) {
+        let config = item.iconConfig(for: currentField)
+        
+        
+        titleLabel.text = currentField.rawValue
+        iconImageView.image = UIImage(systemName: config.systemName)
+        iconImageView.tintColor = config.color
         
         // Xóa các item cũ trong stack view (để tránh lỗi khi tái sử dụng cell)
         detailsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        // Thêm các gạch đầu dòng mới
-        for detail in section.details {
+        // Lấy mảng dữ liệu chuẩn kiểu [String] tương ứng với từng thuộc tính
+        let detailsList = item.valuesArray(for: currentField)
+        
+        // Thêm các gạch đầu dòng mới vào StackView một cách an toàn
+        for detail in detailsList {
             let label = UILabel()
             label.text = "• \(detail)"
             label.font = UIFont.systemFont(ofSize: 14)
             label.textColor = .darkGray
-            label.numberOfLines = 0 // Cho phép xuống dòng nếu chữ dài
+            label.numberOfLines = 0
             detailsStackView.addArrangedSubview(label)
         }
     }
+
 }

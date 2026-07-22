@@ -381,11 +381,10 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     @objc func labelTapped(_ sender: UITapGestureRecognizer) {
         print("Label was tapped!")
-        if let currentLabelDetected = currentLabelDetected{
-            let detailVC = DiseaseDetailViewController()
-            detailVC.typeOfDiseaseCurrent = currentLabelDetected    
+        if let currentLabelDetected = currentLabelDetected,
+           let image = self.previewView.image{
+            let detailVC = DiseaseDetailViewController(currentLabelDetected,image)
             self.navigationController?.pushViewController(detailVC, animated: true)
-            print("Chuyển sang màn hình chi tiết bệnh: \(currentLabelDetected)")
         }
     }
 }

@@ -3,10 +3,61 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "DiseaseDetailViewController.init(_:):DiseaseDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "valueTypeOfDiseaseCurrent">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "HomeViewController.updateLabelsUI():HomeViewController.swift">
          <PersistentStrings>
             <PersistentString
                value = "currentModel">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "DiseaseDetailViewController.getItemDiseaseBy(_:):DiseaseDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "valueTypeOfDiseaseCurrent">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "DiseaseDetailViewController.tableView(_:cellForRowAt:):DiseaseDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "sectionData.rawValue">
+            </PersistentString>
+            <PersistentString
+               value = "caseList">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in CameraDetectionViewController.captureOutput(_:didOutput:from:):CameraDetectionViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "results.topK(k: 1)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "DiseaseDetailViewController.viewDidLoad():DiseaseDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "valueTypeOfDiseaseCurrent">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ItemInforTableViewCell.configure(with:key:):ItemInforTableViewCell.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

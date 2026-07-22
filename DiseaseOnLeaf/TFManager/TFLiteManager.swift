@@ -8,7 +8,8 @@
 import TensorFlowLite
 import AVFoundation
 
-class TFLiteInterpreterManager {
+final class TFLiteInterpreterManager {
+    
     // MARK: - Drawing layers
     private var boundingBoxLayers = [CAShapeLayer]()
     private let labelLayer = CATextLayer()

@@ -269,132 +269,132 @@ class TFLiteInterpreterManager {
         boundingBoxLayers.append(boxLayer)
     }
     
-    // MARK: - Helpers for heatmap generation
-    /// Convert a UIImage (assumed already sized to model input) into the raw RGB Float32 Data used by the model.
-    private func imageToModelInputData(_ image: UIImage) -> Data? {
-        guard let cg = image.cgImage else { return nil }
-        let width = cg.width
-        let height = cg.height
-        let bytesPerPixel = 4
-        let bytesPerRow = bytesPerPixel * width
-        let bitsPerComponent = 8
-        
-        var pixelData = [UInt8](repeating: 0, count: width * height * bytesPerPixel)
-        guard let colorSpace = cg.colorSpace else { return nil }
-        guard let ctx = CGContext(data: &pixelData,
-                                  width: width,
-                                  height: height,
-                                  bitsPerComponent: bitsPerComponent,
-                                  bytesPerRow: bytesPerRow,
-                                  space: colorSpace,
-                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
-        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: width, height: height))
-        
-        var rgbArray = [Float32]()
-        rgbArray.reserveCapacity(width * height * 3)
-        for i in stride(from: 0, to: pixelData.count, by: 4) {
-            let r = Float32(pixelData[i])
-            let g = Float32(pixelData[i + 1])
-            let b = Float32(pixelData[i + 2])
-            rgbArray.append(r)
-            rgbArray.append(g)
-            rgbArray.append(b)
-        }
-        let data = rgbArray.withUnsafeBufferPointer { Data(buffer: $0) }
-        return data
-    }
+//    // MARK: - Helpers for heatmap generation
+//    /// Convert a UIImage (assumed already sized to model input) into the raw RGB Float32 Data used by the model.
+//    private func imageToModelInputData(_ image: UIImage) -> Data? {
+//        guard let cg = image.cgImage else { return nil }
+//        let width = cg.width
+//        let height = cg.height
+//        let bytesPerPixel = 4
+//        let bytesPerRow = bytesPerPixel * width
+//        let bitsPerComponent = 8
+//        
+//        var pixelData = [UInt8](repeating: 0, count: width * height * bytesPerPixel)
+//        guard let colorSpace = cg.colorSpace else { return nil }
+//        guard let ctx = CGContext(data: &pixelData,
+//                                  width: width,
+//                                  height: height,
+//                                  bitsPerComponent: bitsPerComponent,
+//                                  bytesPerRow: bytesPerRow,
+//                                  space: colorSpace,
+//                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+//        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: width, height: height))
+//        
+//        var rgbArray = [Float32]()
+//        rgbArray.reserveCapacity(width * height * 3)
+//        for i in stride(from: 0, to: pixelData.count, by: 4) {
+//            let r = Float32(pixelData[i])
+//            let g = Float32(pixelData[i + 1])
+//            let b = Float32(pixelData[i + 2])
+//            rgbArray.append(r)
+//            rgbArray.append(g)
+//            rgbArray.append(b)
+//        }
+//        let data = rgbArray.withUnsafeBufferPointer { Data(buffer: $0) }
+//        return data
+//    }
     
-    /// Generate a simple occlusion-based heatmap for a single UIImage. This runs multiple inferences and can be slow.
-    /// - Parameters:
-    ///   - image: input UIImage (can be any size; it will be resized to model input inside the function)
-    ///   - patchSize: occlusion square size in pixels (on model input scale)
-    ///   - stride: stride for sliding window (in pixels)
-    ///   - completion: called on main thread with the resulting heatmap UIImage sized inputWidth x inputHeight, or nil on failure.
-    public func generateOcclusionHeatmap(for image: UIImage, patchSize: Int = 28, stride: Int = 14, completion: @escaping (UIImage?) -> Void) {
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self = self else { DispatchQueue.main.async { completion(nil) }; return }
-            // Resize to model input size (scale 1.0)
-            UIGraphicsBeginImageContextWithOptions(CGSize(width: self.inputWidth, height: self.inputHeight), false, 1.0)
-            image.draw(in: CGRect(x: 0, y: 0, width: self.inputWidth, height: self.inputHeight))
-            guard let resized = UIGraphicsGetImageFromCurrentImageContext() else { UIGraphicsEndImageContext(); DispatchQueue.main.async { completion(nil) }; return }
-            UIGraphicsEndImageContext()
-            
-            // Get baseline scores
-            guard let baselineData = self.imageToModelInputData(resized) else { DispatchQueue.main.async { completion(nil) }; return }
-            switch self.runInference(inputData: baselineData) {
-            case .failure(_):
-                DispatchQueue.main.async { completion(nil) }
-                return
-            case .success(let outData):
-                let baselineScores = [Float](unsafeData: outData) ?? []
-                if baselineScores.isEmpty { DispatchQueue.main.async { completion(nil) }; return }
-                // choose target class = top1
-                let targetIdx = baselineScores.enumerated().max(by: { $0.element < $1.element })?.offset ?? 0
-                
-                let W = self.inputWidth
-                let H = self.inputHeight
-                var heat = [Float](repeating: 0, count: W * H)
-                var counts = [Float](repeating: 0, count: W * H)
-                
-                // occlusion: slide patch
-                for y in Swift.stride(from: 0, to: H, by: stride) {
-                    for x in Swift.stride(from: 0, to: W, by: stride) {
-                        autoreleasepool {
-                            // create occluded image by drawing resized and filling rect
-                            UIGraphicsBeginImageContextWithOptions(CGSize(width: W, height: H), false, 1.0)
-                            resized.draw(in: CGRect(x: 0, y: 0, width: W, height: H))
-                            // use mid-gray fill to occlude
-                            UIColor(white: 0.5, alpha: 1.0).setFill()
-                            UIRectFill(CGRect(x: x, y: y, width: patchSize, height: patchSize))
-                            guard let occluded = UIGraphicsGetImageFromCurrentImageContext() else { UIGraphicsEndImageContext(); return }
-                            UIGraphicsEndImageContext()
-                            
-                            guard let input = self.imageToModelInputData(occluded) else { return }
-                            switch self.runInference(inputData: input) {
-                            case .failure(_): return
-                            case .success(let out):
-                                let scores = [Float](unsafeData: out) ?? []
-                                if scores.count <= targetIdx { return }
-                                let importance = baselineScores[targetIdx] - scores[targetIdx]
-                                for py in y..<min(y + patchSize, H) {
-                                    for px in x..<min(x + patchSize, W) {
-                                        let idx = py * W + px
-                                        heat[idx] += importance
-                                        counts[idx] += 1
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // average
-                for i in 0..<heat.count {
-                    if counts[i] > 0 { heat[i] /= counts[i] }
-                }
-                
-                // normalize 0..1
-                let maxV = heat.max() ?? 1
-                let minV = heat.min() ?? 0
-                let norm = heat.map { ($0 - minV) / (maxV - minV + 1e-8) }
-                
-                // create RGBA heatmap image (red=hot)
-                var pixels = [UInt8](repeating: 0, count: W * H * 4)
-                for i in 0..<(W*H) {
-                    let v = UInt8(min(max(norm[i] * 255.0, 0), 255))
-                    pixels[i*4 + 0] = v
-                    pixels[i*4 + 1] = 0
-                    pixels[i*4 + 2] = 255 - v
-                    pixels[i*4 + 3] = 160
-                }
-                guard let cf = CFDataCreate(nil, pixels, pixels.count),
-                      let prov = CGDataProvider(data: cf),
-                      let cg = CGImage(width: W, height: H, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: W*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue), provider: prov, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else {return}
-                let heatmapImage = UIImage(cgImage: cg)
-                DispatchQueue.main.async {
-                    completion(heatmapImage)
-                }
-            }
-        }
-    }
+//    /// Generate a simple occlusion-based heatmap for a single UIImage. This runs multiple inferences and can be slow.
+//    /// - Parameters:
+//    ///   - image: input UIImage (can be any size; it will be resized to model input inside the function)
+//    ///   - patchSize: occlusion square size in pixels (on model input scale)
+//    ///   - stride: stride for sliding window (in pixels)
+//    ///   - completion: called on main thread with the resulting heatmap UIImage sized inputWidth x inputHeight, or nil on failure.
+//    public func generateOcclusionHeatmap(for image: UIImage, patchSize: Int = 28, stride: Int = 14, completion: @escaping (UIImage?) -> Void) {
+//        DispatchQueue.global(qos: .background).async { [weak self] in
+//            guard let self = self else { DispatchQueue.main.async { completion(nil) }; return }
+//            // Resize to model input size (scale 1.0)
+//            UIGraphicsBeginImageContextWithOptions(CGSize(width: self.inputWidth, height: self.inputHeight), false, 1.0)
+//            image.draw(in: CGRect(x: 0, y: 0, width: self.inputWidth, height: self.inputHeight))
+//            guard let resized = UIGraphicsGetImageFromCurrentImageContext() else { UIGraphicsEndImageContext(); DispatchQueue.main.async { completion(nil) }; return }
+//            UIGraphicsEndImageContext()
+//            
+//            // Get baseline scores
+//            guard let baselineData = self.imageToModelInputData(resized) else { DispatchQueue.main.async { completion(nil) }; return }
+//            switch self.runInference(inputData: baselineData) {
+//            case .failure(_):
+//                DispatchQueue.main.async { completion(nil) }
+//                return
+//            case .success(let outData):
+//                let baselineScores = [Float](unsafeData: outData) ?? []
+//                if baselineScores.isEmpty { DispatchQueue.main.async { completion(nil) }; return }
+//                // choose target class = top1
+//                let targetIdx = baselineScores.enumerated().max(by: { $0.element < $1.element })?.offset ?? 0
+//                
+//                let W = self.inputWidth
+//                let H = self.inputHeight
+//                var heat = [Float](repeating: 0, count: W * H)
+//                var counts = [Float](repeating: 0, count: W * H)
+//                
+//                // occlusion: slide patch
+//                for y in Swift.stride(from: 0, to: H, by: stride) {
+//                    for x in Swift.stride(from: 0, to: W, by: stride) {
+//                        autoreleasepool {
+//                            // create occluded image by drawing resized and filling rect
+//                            UIGraphicsBeginImageContextWithOptions(CGSize(width: W, height: H), false, 1.0)
+//                            resized.draw(in: CGRect(x: 0, y: 0, width: W, height: H))
+//                            // use mid-gray fill to occlude
+//                            UIColor(white: 0.5, alpha: 1.0).setFill()
+//                            UIRectFill(CGRect(x: x, y: y, width: patchSize, height: patchSize))
+//                            guard let occluded = UIGraphicsGetImageFromCurrentImageContext() else { UIGraphicsEndImageContext(); return }
+//                            UIGraphicsEndImageContext()
+//                            
+//                            guard let input = self.imageToModelInputData(occluded) else { return }
+//                            switch self.runInference(inputData: input) {
+//                            case .failure(_): return
+//                            case .success(let out):
+//                                let scores = [Float](unsafeData: out) ?? []
+//                                if scores.count <= targetIdx { return }
+//                                let importance = baselineScores[targetIdx] - scores[targetIdx]
+//                                for py in y..<min(y + patchSize, H) {
+//                                    for px in x..<min(x + patchSize, W) {
+//                                        let idx = py * W + px
+//                                        heat[idx] += importance
+//                                        counts[idx] += 1
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                
+//                // average
+//                for i in 0..<heat.count {
+//                    if counts[i] > 0 { heat[i] /= counts[i] }
+//                }
+//                
+//                // normalize 0..1
+//                let maxV = heat.max() ?? 1
+//                let minV = heat.min() ?? 0
+//                let norm = heat.map { ($0 - minV) / (maxV - minV + 1e-8) }
+//                
+//                // create RGBA heatmap image (red=hot)
+//                var pixels = [UInt8](repeating: 0, count: W * H * 4)
+//                for i in 0..<(W*H) {
+//                    let v = UInt8(min(max(norm[i] * 255.0, 0), 255))
+//                    pixels[i*4 + 0] = v
+//                    pixels[i*4 + 1] = 0
+//                    pixels[i*4 + 2] = 255 - v
+//                    pixels[i*4 + 3] = 160
+//                }
+//                guard let cf = CFDataCreate(nil, pixels, pixels.count),
+//                      let prov = CGDataProvider(data: cf),
+//                      let cg = CGImage(width: W, height: H, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: W*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue), provider: prov, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else {return}
+//                let heatmapImage = UIImage(cgImage: cg)
+//                DispatchQueue.main.async {
+//                    completion(heatmapImage)
+//                }
+//            }
+//        }
+//    }
 }

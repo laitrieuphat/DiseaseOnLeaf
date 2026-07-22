@@ -3,6 +3,14 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "DiseaseDetailViewController.viewDidLoad():DiseaseDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "test">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "TFLiteInterpreterManager.loadLabels():TFLiteManager.swift">
          <PersistentStrings>
             <PersistentString

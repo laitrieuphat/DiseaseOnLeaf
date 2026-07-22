@@ -1,0 +1,51 @@
+{
+  "chay_la": {
+    "Tên bệnh": "Cháy lá",
+    "Triệu chứng": ["Lá chuyển màu nâu", "Khô cháy mép lá"],
+    "Nguyên nhân": ["Nấm Phytophthora", "Thiếu nước"],
+    "Cách phòng ngừa": ["Tưới nước hợp lý", "Cắt bỏ lá bệnh"],
+    "Điều trị": ["Phun thuốc nấm", "Bón phân đầy đủ"],
+    "Ghi chú": "Theo dõi sát cây vào mùa mưa."
+  },
+  "dom_la": {
+    "Tên bệnh": "Đốm lá",
+    "Triệu chứng": ["Đốm nâu đen trên lá", "Lá rụng sớm"],
+    "Nguyên nhân": ["Nấm hoặc vi khuẩn"],
+    "Cách phòng ngừa": ["Vệ sinh vườn cây", "Tránh để lá ẩm ướt"],
+    "Điều trị": ["Phun thuốc đặc trị"],
+    "Ghi chú": "Bệnh dễ lây lan khi trời ẩm."
+  },
+  "gi_sat": {
+    "Tên bệnh": "Gỉ sắt",
+    "Triệu chứng": ["Vết gỉ màu vàng cam trên lá", "Lá có đốm nhỏ li ti"],
+    "Nguyên nhân": ["Nấm Hemileia vastatrix"],
+    "Cách phòng ngừa": ["Giữ vườn thông thoáng", "Bón phân đầy đủ"],
+    "Điều trị": ["Phun thuốc gốc đồng hoặc thuốc chứa Mancozeb"],
+    "Ghi chú": "Cần theo dõi và xử lý sớm để tránh lây lan."
+  },
+  "la_khoe": {
+    "Tên bệnh": "Lá khỏe",
+    "Triệu chứng": ["Lá xanh đều", "Không có dấu hiệu bệnh"],
+    "Nguyên nhân": [],
+    "Cách phòng ngừa": ["Chăm sóc bình thường"],
+    "Điều trị": [],
+    "Ghi chú": "Không có vấn đề gì."
+  },
+  "thoi_qua_den": {
+    "Tên bệnh": "Thối quả đen",
+    "Triệu chứng": ["Quả bị thối đen từ cuống xuống", "Mềm nhũn và có mùi hôi"],
+    "Nguyên nhân": ["Vi khuẩn hoặc nấm gây hại", "Độ ẩm cao"],
+    "Cách phòng ngừa": ["Tỉa cành tạo độ thoáng", "Giữ vườn khô ráo"],
+    "Điều trị": ["Phun thuốc phòng nấm", "Loại bỏ quả bệnh"],
+    "Ghi chú": "Thường xảy ra nhiều vào mùa mưa."
+  },
+  "trai_khoe": {
+    "Tên bệnh": "Quả khỏe",
+    "Triệu chứng": ["Quả phát triển đều", "Không có vết bệnh"],
+    "Nguyên nhân": [],
+    "Cách phòng ngừa": ["Chăm sóc bình thường"],
+    "Điều trị": [],
+    "Ghi chú": "Không có dấu hiệu bệnh lý."
+  }
+}
+

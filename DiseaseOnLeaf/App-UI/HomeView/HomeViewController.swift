@@ -12,6 +12,7 @@ import CoreVideo
 import PhotosUI
 
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
+    var currentLabelDetected: String?
     private lazy var optionalAIModelBtn: UIButton = {
         var config = UIButton.Configuration.bordered()
         config.buttonSize = .mini
@@ -73,6 +74,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     private let predictionLabel: UILabel = {
         let l = UILabel()
+        l.isUserInteractionEnabled = true
         l.translatesAutoresizingMaskIntoConstraints = false
         l.backgroundColor = UIColor.white.withAlphaComponent(0.5)
         l.textColor = .lightGray
@@ -148,26 +150,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         imageView.image = UIImage(named: "icon_mamxanh")
         return imageView
     }()
-    
-    // Heatmap overlay shown on top of previewView when a heatmap is generated
-    //    private var heatmapImageView: UIImageView = {
-    //        let iv = UIImageView()
-    //        iv.translatesAutoresizingMaskIntoConstraints = false
-    //        iv.contentMode = .scaleAspectFit
-    //        iv.backgroundColor = .clear
-    //        iv.isHidden = true
-    //        iv.alpha = 0.8
-    //        return iv
-    //    }()
-    
-    var capturedImageLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Captured Image"
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
+        
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -240,6 +223,10 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         let heatTap = UITapGestureRecognizer(target: self, action: #selector(tapOnHeatImage))
         previewView.addGestureRecognizer(heatTap)
         view.addSubview(predictionLabel)
+        
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped(_:)))
+        predictionLabel.addGestureRecognizer(tapGesture)
         
         // Add the activity indicator to the previewView hierarchy
         previewView.addSubview(activityIndicator)
@@ -328,6 +315,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             var predictionText = "Kết quả dự đoán: "
             for (index, score) in topResults {
                 let label = self.interpreterManager.arr_labels[index]
+                self.currentLabelDetected = label
                 predictionText += "\(label)\n "
                 predictionText += " \(String(format: "Độ chính xác: %.2f", score * 100))%\n"
             }
@@ -390,6 +378,16 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             self.setupModelAI()
         }
     }
+    
+    @objc func labelTapped(_ sender: UITapGestureRecognizer) {
+        print("Label was tapped!")
+        if let currentLabelDetected = currentLabelDetected{
+            let detailVC = DiseaseDetailViewController()
+            detailVC.typeOfDiseaseCurrent = currentLabelDetected    
+            self.navigationController?.pushViewController(detailVC, animated: true)
+            print("Chuyển sang màn hình chi tiết bệnh: \(currentLabelDetected)")
+        }
+    }
 }
 
 extension HomeViewController : UIImagePickerControllerDelegate{
@@ -436,7 +434,9 @@ extension HomeViewController: PHPickerViewControllerDelegate{
                             DispatchQueue.main.async {
                                 strongSelf.capturedImage = image
                                 strongSelf.handleDataOutputFromAIModel(results: results,inferenceTime: Float(inferenceTime),fps: Double(fps))
-                                strongSelf.hideLoadingSpinner()                      }
+                                strongSelf.hideLoadingSpinner()
+                                
+                                
                             }
                         }
                     } else if let error = error {
@@ -447,3 +447,4 @@ extension HomeViewController: PHPickerViewControllerDelegate{
         }
     }
 }
+

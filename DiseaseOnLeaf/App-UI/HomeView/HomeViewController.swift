@@ -13,6 +13,26 @@ import PhotosUI
 
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
     var currentLabelDetected: String?
+    // Safety padding from screen edges
+    private let edgePadding: CGFloat = 16
+    
+    
+    // 1. Create the floating button
+    private let floatingButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(named: "chat"), for: .normal)
+//        button.layer.cornerRadius = 30 // Make it a circle (width / 2)
+//        button.layer.masksToBounds = true
+        
+        // Add a subtle border or inner circle to mimic AssistiveTouch
+//        button.layer.borderColor = UIColor.white.withAlphaComponent(0.6).cgColor
+//        button.layer.borderWidth = 3
+        
+        // Ensure it stays on top of other content
+//        button.layer.zPosition = 1
+        return button
+    }()
+    
     private lazy var optionalAIModelBtn: UIButton = {
         var config = UIButton.Configuration.bordered()
         config.buttonSize = .mini
@@ -272,6 +292,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         
         setupUINavigationButtonBarItem()
         setupButtonChooseModel()
+        setupFloatingButton()
         
     }
     
@@ -336,6 +357,75 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         }
     }
     
+    
+    private func setupFloatingButton() {
+        // 2. Set the initial size and position of the button
+        let buttonSize: CGFloat = 60
+        let initialX = view.bounds.width - buttonSize - edgePadding
+        let initialY = view.bounds.height - buttonSize - edgePadding - view.safeAreaInsets.bottom
+        
+        floatingButton.frame = CGRect(x: initialX, y: initialY, width: buttonSize, height: buttonSize)
+        view.addSubview(floatingButton)
+        
+        // 3. Add actions and gesture recognizers
+        floatingButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        floatingButton.addGestureRecognizer(panGesture)
+    }
+    
+
+    // 4. Handle dragging and edge-snapping physics
+    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+        guard let button = gesture.view else { return }
+        
+        let translation = gesture.translation(in: view)
+        
+        switch gesture.state {
+        case .changed:
+            // Move the button center dynamically with your finger
+            button.center = CGPoint(x: button.center.x + translation.x, y: button.center.y + translation.y)
+            gesture.setTranslation(.zero, in: view)
+            
+        case .ended, .cancelled:
+            // Calculate snapping destination when released
+            snapToClosestEdge(button: button)
+            
+        default:
+            break
+        }
+    }
+    
+    private func snapToClosestEdge(button: UIView) {
+        let safeArea = view.safeAreaLayoutGuide.layoutFrame
+        let midX = button.center.x
+        
+        // Restrict vertical positioning within safe area boundaries
+        let minY = safeArea.minY + button.bounds.height / 2 + edgePadding
+        let maxY = safeArea.maxY - button.bounds.height / 2 - edgePadding
+        let boundedY = max(minY, min(button.center.y, maxY))
+        
+        // Determine whether the button is closer to the left or right edge
+        let leftEdgeX = safeArea.minX + button.bounds.width / 2 + edgePadding
+        let rightEdgeX = safeArea.maxX - button.bounds.width / 2 - edgePadding
+        let targetX = (midX < view.bounds.width / 2) ? leftEdgeX : rightEdgeX
+        
+        let finalDestination = CGPoint(x: targetX, y: boundedY)
+        
+        // Smoothly animate the snap-to-edge behavior
+        UIView.animate(
+            withDuration: 0.4,
+            delay: 0,
+            usingSpringWithDamping: 0.75, // Adds a nice, realistic bounce
+            initialSpringVelocity: 1,
+            options: .curveEaseInOut,
+            animations: {
+                button.center = finalDestination
+            },
+            completion: nil
+        )
+    }
+    
     @objc func cameraButtonTapped() {
         let cameraVC = CameraDetectionViewController()
         cameraVC.interpreterManager = self.interpreterManager
@@ -386,6 +476,16 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             let detailVC = DiseaseDetailViewController(currentLabelDetected,image)
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
+    }
+    
+    @objc private func buttonTapped() {
+        print("Floating button tapped! Open menu or perform action here.")
+        let chatbotVC = ChatBotViewController()
+        chatbotVC.modalPresentationStyle = .pageSheet
+        self.present(chatbotVC, animated: true, completion: {
+            print("đã đóng chatbot")
+        })
+
     }
 }
 

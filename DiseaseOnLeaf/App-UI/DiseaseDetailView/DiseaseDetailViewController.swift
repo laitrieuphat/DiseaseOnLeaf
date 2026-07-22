@@ -14,7 +14,7 @@ class DiseaseDetailViewController: UIViewController {
     var caseList = DiseaseDetail.CodingKeys.allCases
     private let tableView: UITableView = {
         let tv = UITableView(frame: .zero, style: .plain)
-        tv.backgroundColor = UIColor(white: 0.96, alpha: 1.0)
+        tv.backgroundColor = UIColor(.backgroundHome)
         tv.separatorStyle = .none
         tv.translatesAutoresizingMaskIntoConstraints = false
         return tv

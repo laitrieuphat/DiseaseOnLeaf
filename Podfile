@@ -8,7 +8,9 @@ target 'DiseaseOnLeaf' do
   # Pods for DiseaseOnLeaf
 
 	 pod 'TensorFlowLiteSwift'
-
+   pod 'MessageKit'
+   pod 'Kingfisher'
+   
   target 'DiseaseOnLeafTests' do
     inherit! :search_paths
     # Pods for testing

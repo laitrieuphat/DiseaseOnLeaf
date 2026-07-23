@@ -39,7 +39,7 @@ class DiseaseDetailViewController: UIViewController {
     }
     
     private func setupNavigationBar() {
-        title = "Chi tiết bệnh lá"
+        title = "Thông tin chi tiết bệnh lá"
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()

@@ -160,6 +160,7 @@
 				76D1E8332EBED89500039700 /* Frameworks */,
 				76D1E8342EBED89500039700 /* Resources */,
 				605AD72ABC2BE320A88CE721 /* [CP] Copy Pods Resources */,
+				005E38D74FC732A039633B13 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -204,6 +205,7 @@
 				76D1E8532EBED89700039700 /* Frameworks */,
 				76D1E8542EBED89700039700 /* Resources */,
 				3E95AA7C8F8F9864C0C5D1B2 /* [CP] Copy Pods Resources */,
+				901EAECBC4848BBD252E3CCE /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -287,6 +289,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		005E38D74FC732A039633B13 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		3E95AA7C8F8F9864C0C5D1B2 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -341,6 +360,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		901EAECBC4848BBD252E3CCE /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests/Pods-DiseaseOnLeaf-DiseaseOnLeafUITests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		918915075C4A9FA2C1911FBE /* [CP] Check Pods Manifest.lock */ = {

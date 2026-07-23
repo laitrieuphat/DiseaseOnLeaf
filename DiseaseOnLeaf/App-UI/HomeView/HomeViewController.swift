@@ -470,26 +470,23 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     @objc func labelTapped(_ sender: UITapGestureRecognizer) {
-        print("Label was tapped!")
         if let currentLabelDetected = currentLabelDetected,
-           let image = self.previewView.image{
-            let detailVC = DiseaseDetailViewController(currentLabelDetected,image)
+           let image = self.previewView.image {
+            let detailVC = DiseaseDetailViewController(currentLabelDetected, image)
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
     
     @objc private func buttonTapped() {
-        print("Floating button tapped! Open menu or perform action here.")
         let chatbotVC = ChatBotViewController()
-        chatbotVC.modalPresentationStyle = .pageSheet
-        self.present(chatbotVC, animated: true, completion: {
-            print("đã đóng chatbot")
-        })
+        let navigation = UINavigationController(rootViewController: chatbotVC)
+        navigation.modalPresentationStyle = .fullScreen
+        present(navigation, animated: true)
 
     }
 }
 
-extension HomeViewController : UIImagePickerControllerDelegate{
+extension HomeViewController: UIImagePickerControllerDelegate {
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
         // You can add any other actions here, such as logging the cancellation
@@ -516,7 +513,7 @@ extension HomeViewController : UIImagePickerControllerDelegate{
     }
 }
 
-extension HomeViewController: PHPickerViewControllerDelegate{
+extension HomeViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true, completion: nil)
         guard let itemProvider = results.first?.itemProvider else { return }

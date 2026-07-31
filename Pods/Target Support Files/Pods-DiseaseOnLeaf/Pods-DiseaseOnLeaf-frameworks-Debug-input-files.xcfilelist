@@ -1,0 +1,4 @@
+${PODS_ROOT}/Target Support Files/Pods-DiseaseOnLeaf/Pods-DiseaseOnLeaf-frameworks.sh
+${BUILT_PRODUCTS_DIR}/InputBarAccessoryView/InputBarAccessoryView.framework
+${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework
+${BUILT_PRODUCTS_DIR}/MessageKit/MessageKit.framework

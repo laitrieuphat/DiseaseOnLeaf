@@ -1,4 +1,10 @@
 PODS:
+  - InputBarAccessoryView (5.5.0):
+    - InputBarAccessoryView/Core (= 5.5.0)
+  - InputBarAccessoryView/Core (5.5.0)
+  - Kingfisher (8.10.0)
+  - MessageKit (3.8.0):
+    - InputBarAccessoryView (~> 5.5.0)
   - TensorFlowLiteC (2.17.0):
     - TensorFlowLiteC/Core (= 2.17.0)
   - TensorFlowLiteC/Core (2.17.0)
@@ -10,17 +16,25 @@ PODS:
   - TensorFlowLiteSwift/Privacy (2.17.0)
 
 DEPENDENCIES:
+  - Kingfisher
+  - MessageKit
   - TensorFlowLiteSwift
 
 SPEC REPOS:
   trunk:
+    - InputBarAccessoryView
+    - Kingfisher
+    - MessageKit
     - TensorFlowLiteC
     - TensorFlowLiteSwift
 
 SPEC CHECKSUMS:
+  InputBarAccessoryView: 1d7b0a672b36e370f01f264b3907ef39d03328e3
+  Kingfisher: db468f911dd666c9134dcbeec4db8bed52e4132d
+  MessageKit: a1ba0c69ebead94029867853eb44dd05b9b3f453
   TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
   TensorFlowLiteSwift: 723fe42222815e72490c79feeff05305530de393
 
-PODFILE CHECKSUM: 8f41eb92bc963534b447b30829cf0116f87721c2
+PODFILE CHECKSUM: 9275113a44f1fc23c0e6c25cb165c13bed3b16e5
 
 COCOAPODS: 1.16.2
